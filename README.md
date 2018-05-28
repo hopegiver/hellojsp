@@ -1,2 +1,2 @@
 # HelloJSP
-Simple JSP Framework
+HelloJSP is simple jsp framework.

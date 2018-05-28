@@ -3,10 +3,10 @@
 DataSet posts = new DataSet();
 posts.addRow();
 posts.put("subject", "hi");
-posts.put("reg_date", "2018/04/24");
+posts.put("reg_date", "20180424");
 posts.addRow();
 posts.put("subject", "bye");
-posts.put("reg_date", "2018/04/24");
+posts.put("reg_date", "20180424");
 
 
 
