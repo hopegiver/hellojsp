@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Blog">
+  <select id="selectOne" resultType="hashmap">
+    select * from TB_BLOG where id = #{id}
+  </select>
+  <select id="selectAll" resultType="hashmap">
+    SELECT id, subject, content, reg_date, status FROM TB_BLOG
+  </select>
+  <insert id="insert" parameterType="hashmap">
+  	insert into TB_BLOG (subject, content, reg_date)
+  	values (#{subject}, #{content}, #{reg_date})
+  </insert>
+  <update id="update" parameterType="hashmap">
+  	update TB_BLOG set subject = #{subject}, content = #{content}, status = #{status}
+	where id = #{id}
+  </update>
+  <delete id="delete" parameterType="int">
+  	delete from TB_BLOG	where id = #{id}
+  </delete>  
+</mapper>

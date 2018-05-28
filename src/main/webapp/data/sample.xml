@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE rootElement>
+<config>
+	<env>
+		<logDir>c:/logs</logDir>
+		<mailFrom>postmaster@test.com</mailFrom>
+		<maxPostSize>1024</maxPostSize>
+	</env>
+	<users>
+		<user>
+			<name>Daniel</name>
+			<age>18</age>
+		</user>
+		<user>
+			<name>홍길동</name>
+			<age>17</age>
+		</user>		
+	</users>
+</config>
