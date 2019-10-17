@@ -1,0 +1,6 @@
+<H1>This is my blog</H1>
+<ul>
+	<!--#foreach($post in $posts)-->
+	<li>[$m.time("yyyy/MM/dd", $post.reg_date)] $post.subject</li>
+	<!--#end-->
+</ul>
