@@ -909,12 +909,12 @@ public class Hello {
 	}
 
 	public static String encode(String str) throws Exception {
-		try { return Base64Coder.encode(str); }
+		try { return Base64Coder.encodeString(str); }
 		catch(Exception e) { return ""; }
 	}
 	
 	public static String decode(String str) throws Exception {
-		try { return Base64Coder.decode(str); }
+		try { return Base64Coder.decodeString(str); }
 		catch(Exception e) { return ""; }
 	}
 

@@ -66,7 +66,7 @@ public class AES {
 			IvParameterSpec ivSpec = new IvParameterSpec(iv);
 			cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
 			byte[] encValue = cipher.doFinal(value.getBytes("UTF-8"));
-			return new String(Base64Coder.enc(encValue));
+			return new String(Base64Coder.encode(encValue));
 		} catch(Exception e) {
 			setError("{AES.encrypt} value:" + value, e);
 		}
@@ -79,7 +79,7 @@ public class AES {
 			SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
 			IvParameterSpec ivSpec = new IvParameterSpec(iv);
 			cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
-			byte[] decValue = cipher.doFinal(Base64Coder.dec(value));
+			byte[] decValue = cipher.doFinal(Base64Coder.decode(value));
 			return new String(decValue, "UTF-8");
 		} catch(Exception e) {
 			setError("{AES.decrypt} value:" + value, e);
