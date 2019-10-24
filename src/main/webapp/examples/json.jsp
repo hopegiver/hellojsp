@@ -15,7 +15,7 @@ m.p(map2);
 String url = m.getWebUrl() + "/hellojsp/data/sample.json";
 
 Json j = new Json(url);
-j.setDebug(out);
+//j.setDebug(out);
 
 String value = j.getString("menu.popup.menuitem[0].value");
 m.p(value);
