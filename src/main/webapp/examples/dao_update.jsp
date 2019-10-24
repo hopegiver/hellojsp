@@ -3,7 +3,7 @@
 DataObject dao = new DataObject("TB_BLOG");
 //dao.setDebug(out);
 
-dao.item("subject", "Nice to meet you.");
+dao.item("subject", "Nice to meet you. " + Hello.getUnixTime());
 dao.item("content", "Nice to meet you too.");
 
 boolean ret = dao.update("id = " + 1);

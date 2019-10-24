@@ -3,29 +3,30 @@ package hellojsp.util;
 import java.io.File;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
-import com.oreilly.servlet.MultipartRequest;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 public class Form {
 
 	public String name = "form1";
 	public ArrayList<String[]> elements = new ArrayList<String[]>();
 	public HashMap<String, Object> data = new HashMap<String, Object>();
+	public HashMap<String, FileItem> uploadedFiles = new HashMap<String, FileItem>();
 	public String errMsg = null;
 	public String uploadDir = Config.getDataDir() + "/files";
 	public int maxPostSize = Config.getInt("maxPostSize", 1024) * 1024 * 1024;
 	public String encoding = Config.getEncoding();
 
 	private static HashMap<String, String> options = new HashMap<String, String>();
-	private static String tempDir = "/".equals(File.separator) ? "/tmp" : "c:\\temp"; 
-
-	private MultipartRequest mrequest = null;	
 	private HttpServletRequest request;
 	private Writer out = null;
 	private boolean debug = false;
@@ -83,33 +84,38 @@ public class Form {
 		this.denyExt = arr;
 	}
 	
-	public void setTempDir(String path) {
-		tempDir = path; 
-	}
-
 	public void setRequest(HttpServletRequest req) {
 		this.request = req;
 
-		String type = req.getContentType();
-		if(type != null && type.toLowerCase().startsWith("multipart/form-data")) {
-			File tmp = new File(tempDir);
-			if(!tmp.exists()) tmp.mkdirs();
-			try {
-				mrequest = new MultipartRequest(req, tempDir, maxPostSize, encoding);
-				Enumeration<?> e = mrequest.getParameterNames();
-				while(e.hasMoreElements()) {
-					String key = (String)e.nextElement();
-					data.put(key, mrequest.getParameter(key));
+		if(ServletFileUpload.isMultipartContent(req)) {
+			DiskFileItemFactory factory = new DiskFileItemFactory();
+
+			// Configure a repository (to ensure a secure temp location is used)
+			ServletContext servletContext = req.getServletContext();
+			File repository = (File) servletContext.getAttribute("javax.servlet.context.tempdir");
+			factory.setRepository(repository);
+
+			// Create a new file upload handler
+			ServletFileUpload upload = new ServletFileUpload(factory);
+			upload.setFileSizeMax(maxPostSize);
+			upload.setHeaderEncoding("utf-8");
+
+			// Parse the request
+			try { 
+				List<FileItem> items = upload.parseRequest(request);
+				for(FileItem item : items) {
+				    if (item.isFormField()) {
+				    	data.put(item.getFieldName(), item.getString("utf-8"));
+				    } else {
+				    	uploadedFiles.put(item.getFieldName(), item);
+				    }					
 				}
-			} catch(Exception e) {
-				setError("{Form.setRequest} maxPostSize:" + maxPostSize, e);
+			
 			}
-		} else {
-			Enumeration<?> e = req.getParameterNames();
-			while(e.hasMoreElements()) {
-				String key = (String)e.nextElement();
-				data.put(key, request.getParameter(key));
+			catch(Exception e) {
+				Hello.errorLog("{Form.setRequest} Multipart Parsing Error", e);
 			}
+			
 		}
 	}
 	
@@ -172,9 +178,7 @@ public class Form {
 	}
 
 	public String[] getArr(String name) {
-		String[] arr;
-		if(mrequest != null) arr = mrequest.getParameterValues(name);
-		else arr = request.getParameterValues(name);
+		String[] arr = request.getParameterValues(name);
 		if(null != arr) {
 			for(int i=0; i<arr.length; i++) {
 				arr[i] = xss(name, arr[i]);
@@ -279,13 +283,9 @@ public class Form {
 	}
 
 	public File saveFile(String name, String path) {
-		if(mrequest == null) {
-			setError("{Form.saveFile} name:" + name, new Exception("mrequest is null"));
-			return null;
-		}
-		File f = mrequest.getFile(name);
-		if(f != null && f.exists()) {
-			String orgname = mrequest.getOriginalFileName(name);
+		FileItem f = uploadedFiles.get(name);
+		if(f != null) {
+			String orgname = f.getName();
 			String ext = Hello.getFileExt(orgname).toLowerCase();
 			if(denyExt != null && Hello.inArray(ext, denyExt)) {
 				f.delete();
@@ -308,28 +308,27 @@ public class Form {
 				if(!target.getParentFile().isDirectory()) {
 					target.getParentFile().mkdirs();
 				}
-				f.renameTo(target);
+				f.write(target);
+				f.delete();
 			} catch(Exception ex) {
 				Hello.errorLog("{Form.saveFile} path:" + path, ex);
 				f.delete();
 			}
 			if(target.exists()) return target;
+		} else {
+			Hello.errorLog("{Form.saveFile} " + name + " is not uploaded");			
 		}
 		return null;
 	}
 
-	public File getFile(String name) {
-		if(mrequest == null) return null;
-		return mrequest.getFile(name);
-	}
-
 	public String getFileName(String name) {
-		return mrequest.getOriginalFileName(name);
+		FileItem f = uploadedFiles.get(name);
+		return f == null ? null : f.getName();
 	}
 
 	public String getFileType(String name) {
-		if(mrequest == null) return "";
-		return mrequest.getContentType(name);
+		FileItem f = uploadedFiles.get(name);
+		return f == null ? null : f.getContentType();
 	}
 
 	public boolean isset(String name) {
@@ -359,7 +358,7 @@ public class Form {
 		if(nicname == null) nicname = name;
 		
 		if(attributes.containsKey("REQUIRED")) {
-			if(mrequest !=  null && mrequest.getFile(name) != null) value = getFileName(name);
+			if(uploadedFiles.get(name) !=  null) value = getFileName(name);
 			if("".equals(value.trim())) {
 				throw new Exception(nicname + " is required");
 			}

@@ -3,7 +3,6 @@
 Hello m = new Hello(request, response, out);
 
 Form f = new Form();
-f.setUploadDir("c:\\data");
 f.setRequest(request);
 
 Page p = new Page();

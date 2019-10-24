@@ -6,7 +6,7 @@ if(m.isPost() && f.validate()) {
 	
 	File file = f.saveFile("file");
 	if(file != null) {
-		
+		m.p(f.get("name"));
 		m.p(file.getAbsolutePath());
 		m.p(file.getName());
 		m.p(f.getFileName("file"));

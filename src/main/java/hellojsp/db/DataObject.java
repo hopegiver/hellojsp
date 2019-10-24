@@ -294,7 +294,6 @@ public class DataObject {
 	}
 
 	public boolean insert() {
-		boolean seqFlag = false;
 
 		int max = record.size();
 		StringBuffer sb = new StringBuffer();
@@ -308,14 +307,15 @@ public class DataObject {
 			if(k < (max - 1)) sb.append(",");
 
 			if(func.containsKey(key)) { sb2.append(func.get(key)); } 
-			else { sb2.append("?"); }
+			else sb2.append("?");
+
+			args[k] = record.get(key);			
 			if(k++ < (max - 1)) sb2.append(",");
 		}
 		sb.append(") VALUES (");
 		sb2.append(")");
 	
 		int ret = execute(sb.toString() + sb2.toString(), args);
-		if(seqFlag) record.remove("id");
 		
 		return ret > 0 ? true : false;
 	}
@@ -362,6 +362,7 @@ public class DataObject {
 			} else {
 				sb.append(key + "=?");
 			}
+			args[k] = record.get(key);
 			if(k++ < (max - 1)) sb.append(",");
 		}
 		sb.append(" WHERE " + where);
@@ -526,25 +527,11 @@ public class DataObject {
 		} catch(Exception e) {}
 	}
 
-	public void startTransWith(DataObject dao1) {
-		startTransWith(dao1, null, null, null, null);
-	}
-	public void startTransWith(DataObject dao1, DataObject dao2) {
-		startTransWith(dao1, dao2, null, null, null);		
-	}
-	public void startTransWith(DataObject dao1, DataObject dao2, DataObject dao3) {
-		startTransWith(dao1, dao2, dao3, null, null);		
-	}
-	public void startTransWith(DataObject dao1, DataObject dao2, DataObject dao3, DataObject dao4) {
-		startTransWith(dao1, dao2, dao3, dao4, null);		
-	}
-	public void startTransWith(DataObject dao1, DataObject dao2, DataObject dao3, DataObject dao4, DataObject dao5) {
+	public void startTransWith(DataObject... daos) {
 		startTrans();
-		if(dao1 != null) dao1.setDB(db);
-		if(dao2 != null) dao2.setDB(db);
-		if(dao3 != null) dao3.setDB(db);
-		if(dao4 != null) dao4.setDB(db);
-		if(dao5 != null) dao5.setDB(db);
+		for(DataObject dao : daos) {
+			if(dao != null) dao.setDB(db);
+		}
 	}
 
 	public void endTrans() {

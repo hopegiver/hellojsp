@@ -3,6 +3,7 @@
 <config>
 	<env>
 		<logDir>c:/logs</logDir>
+		<dataDir>c:/data</dataDir>
 		<mailFrom>postmaster@test.com</mailFrom>
 		<maxPostSize>1024</maxPostSize>
 	</env>

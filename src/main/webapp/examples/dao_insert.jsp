@@ -9,6 +9,6 @@ dao.item("reg_date", Hello.time());
 dao.item("status", 1);
 
 boolean ret = dao.insert();
-//m.p(ret);
+m.p(ret);
 
 %>
