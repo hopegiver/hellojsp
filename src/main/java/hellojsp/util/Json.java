@@ -71,12 +71,15 @@ public class Json {
 	}
 	
 	private void parse() throws Exception {
+		if(this.jstr == null) {
+			throw new Exception("json is null");
+		}
 		if(this.jstr.startsWith("{")) {
 			data = new JSONObject(this.jstr);
 		} else if(this.jstr.startsWith("[")) {
 			data = new JSONArray(this.jstr);
 		} else {
-			setError("{Json.parse} json:" + this.jstr, new Exception("json parsing error"));
+			throw new Exception("json parsing error, json:" + this.jstr);
 		}
 	}
 

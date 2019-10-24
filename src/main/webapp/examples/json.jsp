@@ -12,8 +12,10 @@ m.p(json);
 HashMap<String, Object> map2 = Json.decode(json);
 m.p(map2);
 
-Json j = new Json(Config.getDataDir() + "/sample.json");
-//j.setDebug(out);
+String url = m.getWebUrl() + "/hellojsp/data/sample.json";
+
+Json j = new Json(url);
+j.setDebug(out);
 
 String value = j.getString("menu.popup.menuitem[0].value");
 m.p(value);

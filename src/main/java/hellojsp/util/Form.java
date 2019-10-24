@@ -295,7 +295,7 @@ public class Form {
 			File target;
 			if(path == null) {
 				do {
-					path = uploadDir + "/" + Hello.md5(orgname + System.currentTimeMillis()) + "." + ext;
+					path = uploadDir + "/" + Hello.sha1(orgname + System.currentTimeMillis());
 					target = new File(path);
 				} while(target.exists());
 			} else {

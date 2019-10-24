@@ -8,6 +8,7 @@ lm.setTable("TB_BLOG");
 lm.setFields("*");
 lm.addSearch("subject,content", f.get("keyword"), "LIKE");
 lm.setOrderBy("id DESC");
+
 DataSet posts = lm.getDataSet();
 
 p.setLayout("blog");
