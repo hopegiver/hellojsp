@@ -8,9 +8,10 @@ But this will give you less stress and more freedom.
 
 ## Dependencies
 - activation-1.1.jar
+- commons-io-2.2.jar
 - commons-collections-3.2.1.jar
 - commons-lang-2.4.jar
-- cos-05Now2002.jar
+- commons-fileupload-1.3.3.jar
 - json-20151123.jar
 - mail-1.4.7.jar
 - mybatis-3.4.6.jar
