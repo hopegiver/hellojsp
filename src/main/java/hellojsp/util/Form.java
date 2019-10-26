@@ -23,7 +23,7 @@ public class Form {
 	public HashMap<String, FileItem> uploadedFiles = new HashMap<String, FileItem>();
 	public String errMsg = null;
 	public String uploadDir = Config.getDataDir() + "/files";
-	public int maxPostSize = Config.getInt("maxPostSize", 1024) * 1024 * 1024;
+	public int maxFileSize = Config.getInt("maxFileSize", 1024) * 1024 * 1024;
 	public String encoding = Config.getEncoding();
 
 	private static HashMap<String, String> options = new HashMap<String, String>();
@@ -97,7 +97,7 @@ public class Form {
 
 			// Create a new file upload handler
 			ServletFileUpload upload = new ServletFileUpload(factory);
-			upload.setFileSizeMax(maxPostSize);
+			upload.setFileSizeMax(maxFileSize);
 			upload.setHeaderEncoding("utf-8");
 
 			// Parse the request
