@@ -67,11 +67,15 @@ public class Page {
 		context.put(name, value);
 	}
 
+	public void setLoop(String name, Object value) {
+		context.put(name, value);
+	}
+	
 	public void setWriter(Writer out) {
 		this.out = out;
 	}
 
-	public void print() throws Exception {
+	public void print() {
 		print(this.out);
 	}
 	
@@ -90,7 +94,25 @@ public class Page {
 			setError("{Page.print} vm:" + vm, e);
 		}
 	}
+	
+	public void print(String path) {
+		this.body = path;
+		print();
+	}
 
+	public void display() throws Exception {
+		print();
+	}
+
+	public void display(Writer out) throws Exception {
+		print(out);
+	}
+	
+	public String fetch(String path) throws Exception {
+		this.body = path;
+		return fetch();
+	}
+	
 	public String fetch() throws Exception {
 		StringWriter sw = new StringWriter();
 		print(sw);

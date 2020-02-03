@@ -35,6 +35,7 @@ import java.util.TimeZone;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -77,11 +78,11 @@ public class Hello {
 		this.mailFrom = from;
 	}
 
-	public String reqStr(String name) {
-		return reqStr(name, "");
+	public String request(String name) {
+		return request(name, "");
 	}
 
-	public String reqStr(String name, String str) {
+	public String request(String name, String str) {
 		String value = request.getParameter(name);
 		if(value == null) {
 			return str;
@@ -95,7 +96,7 @@ public class Hello {
 	}
 
 	public int reqInt(String name, int i) {
-		String str = reqStr(name, "" + i);
+		String str = request(name, "" + i);
 		try {
 			if(str.matches("^-?[\\,0-9]+$")) i = Integer.parseInt(replace(str, ",", ""));
 		} catch(Exception e) { }
@@ -108,7 +109,7 @@ public class Hello {
 
 	public String reqEnum(String name, String[] arr) {
 		if(arr == null) return null;
-		String str = reqStr(name);
+		String str = request(name);
 		for(int i=0; i<arr.length; i++) {
 			if(arr[i].equals(str)) return arr[i];
 		}
@@ -1167,6 +1168,27 @@ public class Hello {
 		return s;
 	}
 
+	public static String cutString(String str, int len) throws Exception {
+		return cutString(str, len, "...");
+	}
+
+	public static String cutString(String str, int len, String tail) throws Exception {
+		try  {
+			byte[] by = str.getBytes("utf-8");
+			if(by.length <= len) return str;
+			int count = 0;
+			for(int i = 0; i < len; i++) {
+				if((by[i] & 0x80) == 0x80) count++;
+			}
+			if((by[len - 1] & 0x80) == 0x80 && (count % 2) == 1) len--;
+			len = len - (int)(count / 2);
+			return str.substring(0, len) + tail;
+		} catch(Exception e) {
+			errorLog("{Hello.cutString} " + e.getMessage(), e);
+			return "";
+		}
+	}
+	
 	public boolean eq(String s1, String s2) {
 		if(null == s1 || null == s2) return false;
 		return s1.equals(s2);
@@ -1190,9 +1212,30 @@ public class Hello {
 		}
 		return url;
 	}
+	
+	public void forward(String url) throws Exception {
+		RequestDispatcher dispatcher = request.getRequestDispatcher(url);
+		dispatcher.include(request, response);		
+	}
 
 	public String getRemoteAddr() {
-		return request.getRemoteAddr();
+        String ip = request.getHeader("X-Forwarded-For");
+        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_CLIENT_IP");
+        }
+        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
+        }
+        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        return ip;
 	}
 
 	public void mail(String mailTo, String subject, String body) throws Exception {

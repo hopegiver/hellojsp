@@ -3,9 +3,8 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.hellojsp</groupId>
   <artifactId>hellojsp</artifactId>
-  <packaging>war</packaging>
   <version>0.0.1-SNAPSHOT</version>
-  <name>hellojsp Maven Webapp</name>
+  <name>hellojsp Webapp Framework</name>
   <url>http://maven.apache.org</url>
   <dependencies>
     <dependency>
@@ -32,6 +31,11 @@
     	<groupId>commons-fileupload</groupId>
     	<artifactId>commons-fileupload</artifactId>
     	<version>1.3.3</version>
+    </dependency>
+    <dependency>
+    	<groupId>javax.servlet</groupId>
+    	<artifactId>javax.servlet-api</artifactId>
+    	<version>3.1.0</version>
     </dependency>
   </dependencies>
   <build>

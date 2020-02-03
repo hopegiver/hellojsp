@@ -63,7 +63,10 @@ public class Message {
 	}
 
 	public String get(String key) {
-		String val = "";
+		return get(key, "");
+	}
+	
+	public String get(String key, String val) {
 		try {
 			ResourceBundle rb = getBundle();
 			val = rb.getString(key);

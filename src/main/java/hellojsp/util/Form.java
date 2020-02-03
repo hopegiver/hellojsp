@@ -3,6 +3,7 @@ package hellojsp.util;
 import java.io.File;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -115,7 +116,12 @@ public class Form {
 			catch(Exception e) {
 				Hello.errorLog("{Form.setRequest} Multipart Parsing Error", e);
 			}
-			
+		} else {
+			Enumeration<String> e = req.getParameterNames();
+			while(e.hasMoreElements()) {
+				String key = e.nextElement();
+				data.put(key, request.getParameter(key));
+			}			
 		}
 	}
 	
@@ -295,7 +301,7 @@ public class Form {
 			File target;
 			if(path == null) {
 				do {
-					path = uploadDir + "/" + Hello.sha1(orgname + System.currentTimeMillis());
+					path = uploadDir + "/" + Hello.sha1(orgname + System.currentTimeMillis()) + "." + ext;
 					target = new File(path);
 				} while(target.exists());
 			} else {

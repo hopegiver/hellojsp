@@ -5,6 +5,7 @@ import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -89,6 +90,15 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 		}
 		return idx;
 	}
+
+	public int addRow(Hashtable<String, Object> map) {
+		if(map != null) {
+			this.add(new HashMap<String, Object>(map));
+			idx++;
+		}
+		return idx;
+	}
+	
 	public int addRow(Map<?,?> map) {
 		if(map != null) {
 			this.addRow();

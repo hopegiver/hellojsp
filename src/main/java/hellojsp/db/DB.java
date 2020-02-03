@@ -99,6 +99,10 @@ public class DB {
 		}
 		return session;
 	}
+	
+	public Connection getConnection() {
+		return getSqlSession().getConnection();
+	}
 
 	public void close() {
 		if(_session != null) _session.close();
@@ -139,6 +143,10 @@ public class DB {
 			}
 		}
 		return product;		
+	}
+	
+	public String getDBType() {
+		return getProduct();
 	}
 	
 	public DataSet select(String statement, Object parameters) {
