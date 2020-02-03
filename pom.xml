@@ -41,4 +41,11 @@
   <build>
     <finalName>hellojsp</finalName>
   </build>
+<distributionManagement>
+   <repository>
+     <id>hellojsp</id>
+     <name>hellojsp webapp framework</name>
+     <url>https://maven.pkg.github.com/hopegiver/hellojsp</url>
+   </repository>
+</distributionManagement>  
 </project>
