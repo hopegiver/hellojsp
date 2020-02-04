@@ -15,7 +15,6 @@ import java.util.Hashtable;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.jsp.PageContext;
 
 public class Template {
 	
