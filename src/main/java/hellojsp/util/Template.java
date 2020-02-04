@@ -25,7 +25,6 @@ public class Template {
 	protected Hashtable<String, String> var = new Hashtable<String, String>();
 	protected Hashtable<String, DataSet> loop = new Hashtable<String, DataSet>();
 	protected Writer out = null;
-	private PageContext pageContext = null;
 	private HttpServletRequest request = null;
 	private HttpServletResponse response = null;
 	private boolean debug = false;
@@ -84,10 +83,6 @@ public class Template {
 		}
 	}
 
-	public void setPageContext(PageContext pc) {
-		pageContext = pc;
-	}
-	
 	public void setRoot(String path) {
 		root = path + "/";
 	}
@@ -324,10 +319,7 @@ public class Template {
 				} else if(cmd.startsWith("@execute(")) {
 					String[] names = parseCmd(cmd);
 					if(names == null) continue;
-
-					if(null != pageContext) {
-						pageContext.include(names[2]);
-					} else if(null != request && null != response) {
+					if(null != request && null != response) {
 						RequestDispatcher dispatcher = request.getRequestDispatcher(names[2]);
 						dispatcher.include(request, response);
 					}
