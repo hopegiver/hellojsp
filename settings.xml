@@ -16,12 +16,12 @@
                         <enabled>true</enabled>
                     </releases>
                     <snapshots>
-                        <enabled>true</enabled>
+                        <enabled>false</enabled>
                     </snapshots>
                 </repository>
                 <repository>
                     <id>github</id>
-                    <name>hellojsp webapp framework</name>
+                    <name>GitHub hopegiver Apache Maven Packages</name>
                     <url>https://maven.pkg.github.com/hopegiver/hellojsp</url>
                 </repository>
             </repositories>
