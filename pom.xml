@@ -1,11 +1,53 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.hellojsp</groupId>
   <artifactId>hellojsp</artifactId>
   <version>0.9.1</version>
+  <packaging>jar</packaging>
+
   <name>hellojsp webapp framework</name>
-  <url>http://maven.apache.org</url>
+  <description>HelloJSP is simple java webapp framework</description>
+  <url>https://github.com/hopegiver/hellojsp</url>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>https://opensource.org/licenses/Apache-2.0</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>hopgiver</name>
+      <email>hopegiver@gmail.com</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <url>https://github.com/hopegiver/hellojsp</url>
+  </scm>
+
+  <distributionManagement>
+    <repository>
+      <id>hellojsp</id>
+      <url>https://api.bintray.com/maven/hopegiver/hellojsp/hellojsp/;publish=1</url>
+    </repository>
+  </distributionManagement>  
+
+  <properties>
+    <java.version>1.5</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <bintray.repo>hopegiver/hellojsp</bintray.repo>
+    <bintray.package>hellojsp</bintray.package>
+  </properties>
+
+  <build>
+    <finalName>hellojsp</finalName>
+  </build>
+  
   <dependencies>
     <dependency>
     	<groupId>org.mybatis</groupId>
@@ -33,14 +75,4 @@
     	<version>1.3.3</version>
     </dependency>
   </dependencies>
-  <build>
-    <finalName>hellojsp</finalName>
-  </build>
-<distributionManagement>
-   <repository>
-     <id>github</id>
-     <name>GitHub hopegiver Apache Maven Packages</name>
-     <url>https://maven.pkg.github.com/hopegiver/hellojsp</url>
-   </repository>
-</distributionManagement>  
 </project>
