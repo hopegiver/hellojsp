@@ -43,6 +43,7 @@ public class ListManager {
 		setRequest(request);
 
 	}
+	
 	public void setRequest(HttpServletRequest request) {
 		this.request = request;
 	}
@@ -75,12 +76,11 @@ public class ListManager {
 		this.debug = true;
 		this.out = out;
 	}
+	
 	public void setDebug() {
 		this.out = null;
 		this.debug = true;
 	}
-	public void d(Writer out) { setDebug(out); }
-	public void d() { setDebug(); }
 
 	public void setPage(int pageNum) {
 		if(pageNum < 1) pageNum = 1;
@@ -155,7 +155,6 @@ public class ListManager {
 			else if(type == 4) keyword = "%" + keyword;
 			if(field.indexOf(',') == -1) {
 				if(!"".equals(field)) {
-					//addWhere(field + " " + oper.replace("%", "") + " '" + keyword + "'");
 					addWhere(field + " " + oper.replace("%", "") + " ?");
 					params.add(keyword);
 				}
@@ -165,7 +164,6 @@ public class ListManager {
 				for(int i=0; i<fields.length; i++) {
 					field = fields[i].trim();
 					if(!"".equals(field)) {
-						//v.add(fields[i].trim() + " " + oper.replace("%", "") + " '" + keyword + "'");
 						v.add(fields[i].trim() + " " + oper.replace("%", "") + " ?");
 						params.add(keyword);
 					}
@@ -224,9 +222,6 @@ public class ListManager {
 		}
 		return this.totalNum;
 	}
-	public String getTotalString() {
-		return "<span style=\"font-family:arial, dotum;font-weight:normal;\">Total : <font color=\"blue\">" + Hello.numberFormat(this.totalNum) + "</font> 嫄�</span>";
-	}
 
 	public void setListQuery(String query) {
 		this.listQuery = query;
@@ -271,8 +266,8 @@ public class ListManager {
 	}
 
 
-	public DataSet getRecordSet() throws Exception {
-		
+	public DataSet getDataSet() throws Exception {
+		if(listMode == 1) totalNum = this.getTotalNum();
 		DB db = null;
 		DataSet rs = null;
 		try {
@@ -302,21 +297,6 @@ public class ListManager {
 		return rs;
 	}
 	
-	public DataSet getDataSet() throws Exception {
-		if(listMode == 1) totalNum = this.getTotalNum();
-		DataSet rs = getDataSet();
-		if(rs != null) {
-			for(int j=0; rs.next(); j++) {
-				if(listMode == 1) {
-					rs.put("__ord", totalNum - (pageNum - 1) * listNum - j);
-					rs.put("__asc", (pageNum - 1) * listNum + j + 1);
-				}
-			}
-			rs.first();
-		}
-		return rs;
-	}
-
 	public String getPaging(int linkType) throws Exception {
 
 		Pager pg = new Pager(request);

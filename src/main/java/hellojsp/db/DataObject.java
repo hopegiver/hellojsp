@@ -18,6 +18,7 @@ public class DataObject {
 	public String dbType = "mysql";
 	public String fields = "*";
 	public String table = "";
+	
 	public String orderby = null;
 	public String groupby = null;
 	public String join = "";

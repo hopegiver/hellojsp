@@ -38,7 +38,7 @@
   </distributionManagement>  
 
   <properties>
-    <java.version>1.5</java.version>
+    <java.version>1.6</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <bintray.repo>hopegiver/hellojsp</bintray.repo>
     <bintray.package>hellojsp</bintray.package>
@@ -67,7 +67,7 @@
     <dependency>
     	<groupId>org.json</groupId>
     	<artifactId>json</artifactId>
-    	<version>20151123</version>
+    	<version>20190722</version>
     </dependency>
     <dependency>
     	<groupId>commons-fileupload</groupId>

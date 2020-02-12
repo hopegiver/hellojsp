@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.fileupload.FileItem;
@@ -28,7 +27,7 @@ public class Form {
 	public String encoding = Config.getEncoding();
 
 	private static HashMap<String, String> options = new HashMap<String, String>();
-	private HttpServletRequest request;
+	private HttpServletRequest request = null;
 	private Writer out = null;
 	private boolean debug = false;
 	private String allowScript = null;
@@ -92,8 +91,7 @@ public class Form {
 			DiskFileItemFactory factory = new DiskFileItemFactory();
 
 			// Configure a repository (to ensure a secure temp location is used)
-			ServletContext servletContext = req.getServletContext();
-			File repository = (File) servletContext.getAttribute("javax.servlet.context.tempdir");
+			File repository = (File) req.getSession().getServletContext().getAttribute("javax.servlet.context.tempdir");
 			factory.setRepository(repository);
 
 			// Create a new file upload handler
