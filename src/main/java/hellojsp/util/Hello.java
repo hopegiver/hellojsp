@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -14,6 +15,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URLDecoder;
@@ -39,6 +41,7 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 import javax.servlet.http.HttpSession;
 
 public class Hello {
@@ -1213,9 +1216,22 @@ public class Hello {
 		return url;
 	}
 	
-	public void forward(String url) throws Exception {
-		RequestDispatcher dispatcher = request.getRequestDispatcher(url);
-		dispatcher.include(request, response);		
+	public String includePage(String url) throws Exception {
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		try {
+	    	final PrintWriter writer = new PrintWriter(new OutputStreamWriter(buffer));
+			final HttpServletResponse wrappedResponse = new HttpServletResponseWrapper(response) {
+	            public PrintWriter getWriter() {
+	                return writer;
+	            }
+	        };
+	        RequestDispatcher dispatcher = request.getRequestDispatcher(url);
+			dispatcher.include(request, wrappedResponse);
+			writer.flush();
+		} catch(Exception e) {
+			Hello.errorLog("{Hello.includePage} " + url, e);
+		}
+		return buffer.toString();
 	}
 
 	public String getRemoteAddr() {
