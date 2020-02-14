@@ -10,8 +10,8 @@ But this will give you less stress and more freedom.
 pom.xml
 ```
 <dependency>
-	<groupId>org.hellojsp</groupId>
-	<artifactId>hellojsp</artifactId>
-	<version>0.9.2</version>
+  <groupId>org.hellojsp</groupId>
+  <artifactId>hellojsp</artifactId>
+  <version>0.9.2</version>
 </dependency>
 ```
