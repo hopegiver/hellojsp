@@ -1219,13 +1219,13 @@ public class Hello {
 	public String includePage(String url) throws Exception {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		try {
-	    	final PrintWriter writer = new PrintWriter(new OutputStreamWriter(buffer));
+			final PrintWriter writer = new PrintWriter(new OutputStreamWriter(buffer));
 			final HttpServletResponse wrappedResponse = new HttpServletResponseWrapper(response) {
-	            public PrintWriter getWriter() {
-	                return writer;
-	            }
-	        };
-	        RequestDispatcher dispatcher = request.getRequestDispatcher(url);
+				public PrintWriter getWriter() {
+					return writer;
+				}
+			};
+			RequestDispatcher dispatcher = request.getRequestDispatcher(url);
 			dispatcher.include(request, wrappedResponse);
 			writer.flush();
 		} catch(Exception e) {
