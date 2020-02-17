@@ -13,6 +13,7 @@ public class Page {
 	protected String root;
 	protected String layout;
 	protected String body;
+	protected String encoding = Config.getEncoding();
 	
 	private Writer out;
 	private boolean debug = false;
@@ -52,15 +53,19 @@ public class Page {
 		} catch(Exception e) {}
 	}
 	
+	public void setEncoding(String enc) {
+		this.encoding = enc;
+	}
+
 	public void setLayout(String layout) {
 		if(layout == null) this.layout = null;
 		else {
-			this.layout = "layout/layout_" + layout + ".html";
+			this.layout = "layout/layout_" + layout.replace(".",  "/") + ".html";
 		}
 	}
 
 	public void setBody(String body) {
-		this.body = body + ".html";
+		this.body = body.replace(".",  "/") + ".html";
 	}
 	
 	public void setVar(String name, Object value) {
@@ -88,7 +93,7 @@ public class Page {
 			} else {
 				vm = this.body;
 			}
-			Template template = Velocity.getTemplate(vm);
+			Template template = Velocity.getTemplate(vm, encoding);
 			template.merge(context, out);
 		} catch(Exception e) {
 			setError("{Page.print} vm:" + vm, e);

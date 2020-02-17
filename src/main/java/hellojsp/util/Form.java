@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FilenameUtils;
 
 public class Form {
 
@@ -105,11 +106,10 @@ public class Form {
 				for(FileItem item : items) {
 				    if (item.isFormField()) {
 				    	data.put(item.getFieldName(), item.getString("utf-8"));
-				    } else {
+				    } else if(item.getSize() > 0){
 				    	uploadedFiles.put(item.getFieldName(), item);
-				    }					
+				    }
 				}
-			
 			}
 			catch(Exception e) {
 				Hello.errorLog("{Form.setRequest} Multipart Parsing Error", e);
@@ -327,7 +327,7 @@ public class Form {
 
 	public String getFileName(String name) {
 		FileItem f = uploadedFiles.get(name);
-		return f == null ? null : f.getName();
+		return f == null ? null : FilenameUtils.getName(f.getName());
 	}
 
 	public String getFileType(String name) {
