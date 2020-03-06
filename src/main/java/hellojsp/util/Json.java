@@ -294,7 +294,7 @@ public class Json {
 	}
 	
 	public void success(String message, Object data) throws Exception {
-		print(0, message, null);
+		print(0, message, data);
 	}
 
 	public void print(int code, String message, Object data) throws Exception {
