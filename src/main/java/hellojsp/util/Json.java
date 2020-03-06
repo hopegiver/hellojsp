@@ -48,6 +48,10 @@ public class Json {
 		} catch(Exception e) {}
 	}
 
+	public void setWriter(Writer out) {
+		this.out = out;
+	}
+	
 	public void setUrl(String url) {
 		try { 
 			Http http = new Http(url);
@@ -264,10 +268,6 @@ public class Json {
 		return list;
 	}
 	
-	public void print(Writer out) throws Exception {
-		out.write(data.toString());
-	}
-	
 	public void clear() {
 		data = new JSONObject();
 	}
@@ -275,21 +275,28 @@ public class Json {
 	public String toString() {
 		return data.toString();
 	}
-	
-	public static void printError(String message, Writer out) throws Exception {
-		JSONObject err = new JSONObject();
-		err.put("error", 1);
-		err.put("message", message);
-		out.write(err.toString());
+
+	public void print() throws Exception {
+		out.write(data.toString());
 	}
 
-	public static void printResult(Object data, Writer out) throws Exception {
+	public void print(Object data) throws Exception {
+		print(0, "success", data);
+	}
+	
+	public void print(int code, String message) throws Exception {
+		print(code, message, null);
+	}
+	
+	public void print(int code, String message, Object data) throws Exception {
 		JSONObject ret = new JSONObject();
-		ret.put("error", 0);
-		ret.put("message", "success");
-		if(data instanceof Map) ret.put("result", new JSONObject((Map<?,?>)data));
-		else if(data instanceof List) ret.put("result", new JSONArray((List<?>)data));
-		else ret.put("result", data.toString());
+		ret.put("error", code);
+		ret.put("message", message);
+		if(data != null) {
+			if(data instanceof Map) ret.put("data", new JSONObject((Map<?,?>)data));
+			else if(data instanceof List) ret.put("data", new JSONArray((List<?>)data));
+			else ret.put("data", data.toString());
+		}
 		out.write(ret.toString());
 	}
 

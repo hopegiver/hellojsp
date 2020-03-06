@@ -29,9 +29,10 @@ public class DataObject {
 	public Hashtable<String, Object> record = new Hashtable<String, Object>();
 	public Hashtable<String, String> func = new Hashtable<String, String>();
 	public String errMsg = null;
+	private DB db = null;
 	private Writer out = null;
 	private boolean debug = false;
-	private DB db = null;
+	private boolean insertId = false;
 
 	public DataObject() {
 		
@@ -320,7 +321,13 @@ public class DataObject {
 		
 		return ret > 0 ? true : false;
 	}
-
+	
+	public int insertWithId() {
+		setInsertId();
+		insert();
+		return newId;
+	}
+	
 	public boolean replace() {
 		int max = record.size();
 		StringBuffer sb = new StringBuffer();
@@ -386,7 +393,11 @@ public class DataObject {
 		int ret = execute(sql);
 		return ret > -1 ? true : false;
 	}
-
+ 
+	public void setInsertId() {
+		this.insertId = true;
+	}
+	
 	public int getInsertId() {
 		return newId;
 	}
@@ -456,9 +467,11 @@ public class DataObject {
 
 			if(db == null) db = new DB(databaseId);
 			if(debug == true) db.setDebug(out);
+			if(insertId == true) db.setInsertId();
+			
 			ret = db.execute(sql);
-			newId = db.getInsertId();
 
+			if(insertId == true) newId = db.getInsertId();
 			if(ret == -1) this.errMsg = db.errMsg;
 			else {
 				long etime = System.currentTimeMillis();
@@ -482,9 +495,11 @@ public class DataObject {
 
 			if(db == null) db = new DB(databaseId);
 			if(debug == true) db.setDebug(out);
+			if(insertId == true) db.setInsertId();
+			
 			ret = db.execute(sql, args);
-			newId = db.getInsertId();
-
+			
+			if(insertId == true) newId = db.getInsertId();
 			if(ret == -1) this.errMsg = db.errMsg;
 			else {
 				long etime = System.currentTimeMillis();

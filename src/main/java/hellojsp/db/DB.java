@@ -30,6 +30,7 @@ public class DB {
 	private Writer out = null;
 	private boolean debug = false;
 	private boolean autoCommit = true;
+	private boolean insertId = false;
 
 	public String errMsg = null;
 	public String query = null;
@@ -263,11 +264,21 @@ public class DB {
 		try {
 			setError(query);
 			setError(Arrays.toString(args));
-			pstmt = conn.prepareStatement(query);
+			if(insertId == true) {
+				pstmt = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+			} else {
+				pstmt = conn.prepareStatement(query);
+			}
 			if(args != null) {
 				for(int i=0; i<args.length; i++) pstmt.setObject(i+1, args[i]);
 			}
 			ret = pstmt.executeUpdate();
+			if(insertId == true && ret == 1) {
+				ResultSet rs = pstmt.getGeneratedKeys();
+				if (rs != null && rs.next()) {
+					try { newId = rs.getInt(1); } catch(Exception e) {} finally { rs.close(); }
+				}
+			}
 		} catch(Exception e) {
 			setError(e.getMessage());
 			Hello.errorLog("{DB.execute} " + query + " => " + e.getMessage() + "\n" + args.toString(), e);
@@ -321,7 +332,9 @@ public class DB {
 		}
 		return ret;
 	}
-	
+	public void setInsertId() {
+		this.insertId = true;
+	}
 	public int getInsertId() {
 		return newId;
 	}
