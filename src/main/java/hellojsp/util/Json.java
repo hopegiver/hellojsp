@@ -18,7 +18,7 @@ public class Json {
 	private boolean debug = false;
 
 	public Json() {
-		data = new JSONObject();
+
 	}
 	
 	public Json(String jstr) {
@@ -215,12 +215,10 @@ public class Json {
 	}
 	
 	public void put(Map<String, Object> map) {
-		if(data == null) data = new JSONObject();
 		this.data = new JSONObject(map);
 	}
 	
 	public void put(List<Object> list) {
-		if(data == null) data = new JSONObject();
 		this.data = new JSONArray(list);
 	}
 	
@@ -231,6 +229,40 @@ public class Json {
 		} else {
 			setError("{Json.put} data:" + data.toString(), new Exception("data is not JSONObject"));
 		}
+	}
+
+	public void clear() {
+		data = null;
+	}
+	
+	public String toString() {
+		return data != null ? data.toString() : "";
+	}
+
+	public void print() throws Exception {
+		if(data != null) out.write(data.toString());
+	}
+
+	public void error(int code, String message) throws Exception {
+		print(code, message, null);
+	}
+	
+	public void success(String message, Object data) throws Exception {
+		print(0, message, data);
+	}
+
+	public void print(int code, String message, Object obj) throws Exception {
+		JSONObject ret = new JSONObject();
+		ret.put("error", code);
+		ret.put("message", message);
+		if(obj != null) {
+			if(data instanceof Map) ret.put("data", new JSONObject((Map<?,?>)obj));
+			else if(data instanceof List) ret.put("data", new JSONArray((List<?>)obj));
+			else ret.put("data", obj.toString());
+		} else if(data != null) {
+			ret.put("data", this.data);
+		}
+		out.write(ret.toString());
 	}
 
 	public static String encode(Map<?,?> map) throws Exception {
@@ -275,38 +307,5 @@ public class Json {
 			}
 		}
 		return list;
-	}
-	
-	public void clear() {
-		data = new JSONObject();
-	}
-	
-	public String toString() {
-		return data.toString();
-	}
-
-	public void print() throws Exception {
-		out.write(data.toString());
-	}
-
-	public void error(int code, String message) throws Exception {
-		print(code, message, null);
-	}
-	
-	public void success(String message, Object data) throws Exception {
-		print(0, message, data);
-	}
-
-	public void print(int code, String message, Object data) throws Exception {
-		JSONObject ret = new JSONObject();
-		ret.put("error", code);
-		ret.put("message", message);
-		if(data != null) {
-			if(data instanceof Map) ret.put("data", new JSONObject((Map<?,?>)data));
-			else if(data instanceof List) ret.put("data", new JSONArray((List<?>)data));
-			else ret.put("data", data.toString());
-		}
-		out.write(ret.toString());
-	}
-
+	}	
 }
