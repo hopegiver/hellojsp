@@ -57,18 +57,25 @@ public class Json {
 			Http http = new Http(url);
 			if(this.debug) http.setDebug(this.out);
 			setJson(http.send());
+			parse();
 		} catch(Exception e) {
 			setError("{Json.setUrl} " + e.getMessage(), e);
 		}
 	}
 	
 	public void setJson(String jstr) {
-		this.jstr = jstr.trim();
+		try {		
+			this.jstr = jstr.trim();
+			parse();
+		} catch(Exception e) {
+			setError("{Json.setJson} json:" + jstr, e);
+		}
 	}
 	
 	public void setFile(String path) {
 		try {
 			setJson(Hello.readFile(path));
+			parse();
 		} catch(Exception e) {
 			setError("{Json.setFile} path:" + path, e);
 		}
@@ -208,10 +215,12 @@ public class Json {
 	}
 	
 	public void put(Map<String, Object> map) {
+		if(data == null) data = new JSONObject();
 		this.data = new JSONObject(map);
 	}
 	
 	public void put(List<Object> list) {
+		if(data == null) data = new JSONObject();
 		this.data = new JSONArray(list);
 	}
 	
@@ -280,14 +289,14 @@ public class Json {
 		out.write(data.toString());
 	}
 
-	public void print(Object data) throws Exception {
-		print(0, "success", data);
-	}
-	
-	public void print(int code, String message) throws Exception {
+	public void error(int code, String message) throws Exception {
 		print(code, message, null);
 	}
 	
+	public void success(String message, Object data) throws Exception {
+		print(0, message, null);
+	}
+
 	public void print(int code, String message, Object data) throws Exception {
 		JSONObject ret = new JSONObject();
 		ret.put("error", code);
