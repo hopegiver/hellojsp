@@ -251,13 +251,17 @@ public class Json {
 		print(0, message, data);
 	}
 
+	public void print(int code, String message) throws Exception {
+		print(code, message, null);
+	}
+	
 	public void print(int code, String message, Object obj) throws Exception {
 		JSONObject ret = new JSONObject();
 		ret.put("error", code);
 		ret.put("message", message);
 		if(obj != null) {
-			if(data instanceof Map) ret.put("data", new JSONObject((Map<?,?>)obj));
-			else if(data instanceof List) ret.put("data", new JSONArray((List<?>)obj));
+			if(obj instanceof Map) ret.put("data", new JSONObject((Map<?,?>)obj));
+			else if(obj instanceof List) ret.put("data", new JSONArray((List<?>)obj));
 			else ret.put("data", obj.toString());
 		} else if(data != null) {
 			ret.put("data", this.data);
