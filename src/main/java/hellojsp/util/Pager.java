@@ -83,7 +83,7 @@ public class Pager {
 		StringBuffer sb = new StringBuffer();
 		
 		sb.append("<ul class='pagination'>");
-		sb.append("<li class='page-item'><a href='"+ (pageNum > 1 ? getPageLink(pageNum-1) : "#") +"' title='Previous'>&laquo;</a></li>");
+		sb.append("<li class='page-item'><a class='page-link' href='"+ (pageNum > 1 ? getPageLink(pageNum-1) : "#") +"' title='Previous'>&laquo;</a></li>");
 
 		for(int i = firstPage; i <= lastPage; i++) {
 			if(pageNum == i) {
@@ -93,7 +93,7 @@ public class Pager {
 			}
 		}
 
-		sb.append("<li class='page-item'><a href='"+ (pageNum < totalPage ? getPageLink(pageNum + 1) : "#") +"' title='Next'>&raquo;</a></li>");
+		sb.append("<li class='page-item'><a class='page-link' href='"+ (pageNum < totalPage ? getPageLink(pageNum + 1) : "#") +"' title='Next'>&raquo;</a></li>");
 		sb.append("</ul>");
 
 		return sb.toString();
