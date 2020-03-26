@@ -172,6 +172,7 @@ public class Pager {
 	}
 
 	private String getPageLink(int num) {
-		return link + pageVar + "=" + num;
+		if(linkType == 1) return "javascript:MovePage(" + num + ")";
+		else return link + pageVar + "=" + num;
 	}
 }

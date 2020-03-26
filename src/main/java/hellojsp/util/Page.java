@@ -2,6 +2,7 @@ package hellojsp.util;
 
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.velocity.Template;
@@ -15,26 +16,18 @@ public class Page {
 	protected String body;
 	protected String encoding = Config.getEncoding();
 	
+	private int type = 0;
 	private Writer out;
 	private boolean debug = false;
-	private VelocityContext context;
+	private HashMap<String, Object> data = new HashMap<String, Object>();
 	
 	public Page() {
 		this.root = Config.getTplRoot();
-		init();
 	}
 	
 	public Page(String root) {
 		this.root = root;
-		init();
 		setWriter(out);
-	}
-	
-	public void init() {
-		Properties p = new Properties();
-		p.setProperty("file.resource.loader.path", this.root);
-		Velocity.init(p);
-		context = new VelocityContext();
 	}
 	
 	public void setDebug(Writer out) {
@@ -56,12 +49,14 @@ public class Page {
 	public void setEncoding(String enc) {
 		this.encoding = enc;
 	}
+	
+	public void setType(int type) {
+		this.type = type;
+	}
 
 	public void setLayout(String layout) {
 		if(layout == null) this.layout = null;
-		else {
-			this.layout = "layout/layout_" + layout.replace(".",  "/") + ".html";
-		}
+		else this.layout = "layout/layout_" + layout.replace(".",  "/") + ".html";
 	}
 
 	public void setBody(String body) {
@@ -69,11 +64,15 @@ public class Page {
 	}
 	
 	public void setVar(String name, Object value) {
-		context.put(name, value);
+		data.put(name, value);
 	}
 
-	public void setLoop(String name, Object value) {
-		context.put(name, value);
+	public void setVar(String name, DataSet value) {
+		data.put(name, value.getRow());
+	}	
+	
+	public void setLoop(String name, DataSet value) {
+		data.put(name, value);
 	}
 	
 	public void setWriter(Writer out) {
@@ -81,27 +80,50 @@ public class Page {
 	}
 
 	public void print() {
+		if(this.layout == null && this.body == null) this.type = 1;
+		print(this.out);
+	}
+
+	public void print(int type) {
+		this.type = type;
 		print(this.out);
 	}
 	
 	public void print(Writer out) {
-		String vm = null;
 		try {
-			if(this.layout != null) {
-				vm = this.layout;
-				context.put("BODY", this.body);
-			} else {
-				vm = this.body;
+			if(type == 0) {
+				Properties p = new Properties();
+				p.setProperty("file.resource.loader.path", this.root);
+				
+				Velocity.init(p);
+				
+				VelocityContext context = new VelocityContext();
+				for(String key : data.keySet()) context.put(key,  data.get(key));
+
+				String vm = null;
+				if(this.layout != null) {
+					vm = this.layout;
+					context.put("BODY", this.body);
+				} else {
+					vm = this.body;
+				}
+				
+				Template template = Velocity.getTemplate(vm, encoding);
+				template.merge(context, out);
+
+			} else if(type == 1) {
+				data.remove("m");
+				Json j = new Json();
+				j.setWriter(out);
+				j.print(0, "success", data);
 			}
-			Template template = Velocity.getTemplate(vm, encoding);
-			template.merge(context, out);
-		} catch(Exception e) {
-			setError("{Page.print} vm:" + vm, e);
+		} catch (Exception e) {
+			setError("{Page.print} type:" + type, e);
 		}
 	}
 	
 	public void print(String path) {
-		this.body = path;
+		this.body = path.replace(".",  "/") + ".html";
 		print();
 	}
 
@@ -114,7 +136,7 @@ public class Page {
 	}
 	
 	public String fetch(String path) throws Exception {
-		this.body = path;
+		this.body = path.replace(".",  "/") + ".html";
 		return fetch();
 	}
 	

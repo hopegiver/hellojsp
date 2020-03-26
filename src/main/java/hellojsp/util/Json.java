@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.XML;
 
 public class Json {
 
@@ -238,7 +239,11 @@ public class Json {
 	public String toString() {
 		return data != null ? data.toString() : "";
 	}
-
+/*	
+	public String toXML() {
+		return XML.toString((JSONObject)data);
+	}
+*/
 	public void print() throws Exception {
 		if(data != null) out.write(data.toString());
 	}

@@ -476,7 +476,7 @@ public class Form {
 		    sb.append(", {" + (element[2] != null ? element[2] : "") + "});\r\n");
 		}
 		
-		sb.append("\tif(!_f.onsubmit) _f.onsubmit = function() { return validate(this); };\r\n");
+		sb.append("\tif(!_f.onsubmit) _f.onsubmit = function() { return typeof obj === 'function' ? validate(this) : true; };\r\n");
 		sb.append("}\r\n");
 		sb.append("//]]>\r\n");
 		sb.append("</script>");

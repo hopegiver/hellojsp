@@ -130,7 +130,7 @@ public class Hello {
 				}
 			}
 		} catch(Exception ex) {
-			errorLog("{Hello.reqMap} " + ex.getMessage());
+			errorLog("{Hello.reqMap} name:" + name, ex);
 		}
 		return map;
 	}
@@ -155,7 +155,7 @@ public class Hello {
 		try {
 			response.sendRedirect(url);
 		} catch(Exception e) {
-			errorLog("{Hello.redirect} " + e.getMessage());
+			errorLog("{Hello.redirect} url:" + url, e);
 			jsReplace(url);
 		}
 	}
@@ -172,7 +172,7 @@ public class Hello {
 		try {
 			out.write("<script>alert('" + replace(msg, "\'", "\\\'") + "');</script>");
 		} catch(Exception e) {
-			errorLog("{Hello.jsAlert} " + e.getMessage());
+			errorLog("{Hello.jsAlert} msg:" + msg, e);
 		}
 	}
 
@@ -180,7 +180,7 @@ public class Hello {
 		try {
 			out.write("<script>alert('" + msg + "');history.go(-1)</script>");
 		} catch(Exception e) {
-			errorLog("{Hello.jsError} " + e.getMessage());
+			errorLog("{Hello.jsError} msg:" + msg, e);
 		}
 	}
 
@@ -188,7 +188,7 @@ public class Hello {
 		try {
 			out.write("<script>alert('" + msg + "');" + target + ".location.href = " + target + ".location.href;</script>");
 		} catch(Exception e) {
-			errorLog("{Hello.jsError} " + e.getMessage());
+			errorLog("{Hello.jsError} msg" + msg + ", target:" + target, e);
 		}
 	}
 
@@ -198,7 +198,7 @@ public class Hello {
 			out.write(str);
 			out.write("</script>");
 		} catch(Exception e) {
-			errorLog("{Hello.js} " + e.getMessage());
+			errorLog("{Hello.js} str:" + str, e);
 		}
 	}
 
@@ -211,7 +211,7 @@ public class Hello {
 			if(tgt == null) tgt = "window";
 			out.write("<script>alert('" + msg + "');" + tgt + ".close()</script>");
 		} catch(Exception e) {
-			errorLog("{Hello.jsErrClose} " + e.getMessage());
+			errorLog("{Hello.jsErrClose} msg:" + msg +", target:" + tgt, e);
 		}
 	}
 
@@ -223,7 +223,7 @@ public class Hello {
 		try {
 			out.write("<script>"+ target +".location.replace('" + url + "');</script>");
 		} catch(Exception e) {
-			errorLog("{Hello.jsReplace} " + e.getMessage());
+			errorLog("{Hello.jsReplace} url:" + url + ", target:" + target, e);
 		}
 	}
 
@@ -288,6 +288,7 @@ public class Hello {
 	}
 
 	public static String time(String sformat, String date) {
+		if("".equals(date)) return "";
 		Date d = strToDate(date.trim());
 		SimpleDateFormat sdf = new SimpleDateFormat(sformat);
 		if(sdf == null || d == null) return "";
@@ -302,6 +303,7 @@ public class Hello {
     }
 
     public static String time(String sformat, String date, String timezone) {
+    	if("".equals(date)) return "";
         Date d = strToDate(date.trim());
         SimpleDateFormat sdf = new SimpleDateFormat(sformat);
 		sdf.setTimeZone(TimeZone.getTimeZone(timezone));
@@ -327,6 +329,7 @@ public class Hello {
 		try {
 			Date d1 = strToDate(sdate.trim());
 			Date d2 = strToDate(edate.trim());
+			if(d1 == null || d2 == null) throw new Exception("date is null");
 
 			long diff =	d2.getTime() - d1.getTime();
 			type = type.toUpperCase();
@@ -346,7 +349,7 @@ public class Hello {
 				}
 			}
 		} catch(Exception e) {
-			errorLog("{Hello.diffDate} ", e);
+			errorLog("{Hello.diffDate} type:" + type + ", sdate:" + sdate + ", edate:" + edate, e);
 		}
 		return ret;
 	}
@@ -360,6 +363,7 @@ public class Hello {
 	}
 
 	public static Date addDate(String type, int amount, Date d) {
+		if(d == null) return null;
 		try {
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(d);
@@ -373,7 +377,7 @@ public class Hello {
 			else if("S".equals(type)) cal.add(Calendar.SECOND, amount);
 			return cal.getTime();
 		} catch(Exception e) {
-			errorLog("{Hello.addDate} date:" + d.toString(), e);
+			errorLog("{Hello.addDate} type:" + type + ", date:" + d.toString(), e);
 		}
 		return null;
 	}
@@ -394,7 +398,7 @@ public class Hello {
 		try {
 			d = sdf.parse(source);
 		} catch (Exception e) {
-			errorLog("{Hello.strToDate} date:" + source, e) ;
+			errorLog("{Hello.strToDate} format:" + format + ", date:" + source + ", locale:" + loc, e) ;
 		}
 		return d;
 	}
@@ -407,7 +411,7 @@ public class Hello {
 		try {
 			d = sdf.parse(source);
 		} catch (Exception e) {
-			errorLog("{Hello.strToDate} date:" + source, e) ;
+			errorLog("{Hello.strToDate} format:" + format + ", date:" + source, e) ;
 		}
 		return d;
 	}
@@ -452,7 +456,7 @@ public class Hello {
 				sb.append(md5Char);
 			}
 		} catch (Exception e) {
-			errorLog("{Hello.encrypt} str:" + str, e);
+			errorLog("{Hello.encrypt} str:" + str + ", algorithm:" + algorithm, e);
 		}
         return sb.toString();
     }
@@ -773,7 +777,7 @@ public class Hello {
 				fin.close();
 
 			} catch(Exception e) {
-				errorLog("{Hello.download} path:" + path, e);
+				errorLog("{Hello.download} path:" + path + ", filename:" + filename, e);
 				response.setContentType("text/html");
 				out.write("File Download Error : " + e.getMessage());
 			}
@@ -855,7 +859,7 @@ public class Hello {
 					position += inChannel.transferTo(position, maxCount, outChannel);
 				}
 			} catch (IOException e) {
-				errorLog("{Hello.copyFile} path:" + target.getAbsolutePath(), e);
+				errorLog("{Hello.copyFile} source:" + source.getAbsolutePath() + ", target:" + target.getAbsolutePath(), e);
 				throw e;
 			} finally {
 				if(inChannel != null) inChannel.close();
@@ -884,7 +888,7 @@ public class Hello {
 			} 
 			f.delete();
 		} else {
-			errorLog(path + " is not found");
+			errorLog(path + " is not found", new Exception("file not found"));
 		}
 	}
 
@@ -940,11 +944,10 @@ public class Hello {
 			s.flush();
 		} catch(Exception e) {
 			errorLog("{Hello.serialize} path:" + file.getAbsolutePath(), e);
-			e.printStackTrace(System.out);
 			flag = false;
 		} finally {
-			if( s != null ) try { s.close(); } catch(Exception e) { e.printStackTrace(System.out); }
-			if( f != null ) try { f.close(); } catch(Exception e) { e.printStackTrace(System.out); }
+			if( s != null ) try { s.close(); } catch(Exception e) { }
+			if( f != null ) try { f.close(); } catch(Exception e) { }
 		}
 		return flag;
 	}
@@ -963,10 +966,9 @@ public class Hello {
 			obj = ois.readObject();
 		} catch(Exception e) {
 			errorLog("{Hello.unserialize} path:" + file.getAbsolutePath(), e);
-			e.printStackTrace(System.out);
 		} finally {
-			if( ois != null ) try { ois.close(); } catch(Exception e) { e.printStackTrace(System.out); }
-			if( fis != null ) try { fis.close(); } catch(Exception e) { e.printStackTrace(System.out); }
+			if( ois != null ) try { ois.close(); } catch(Exception e) { }
+			if( fis != null ) try { fis.close(); } catch(Exception e) { }
 		}
 		return obj;
 	}
@@ -1187,7 +1189,7 @@ public class Hello {
 			len = len - (int)(count / 2);
 			return str.substring(0, len) + tail;
 		} catch(Exception e) {
-			errorLog("{Hello.cutString} " + e.getMessage(), e);
+			errorLog("{Hello.cutString} str:" + str + ", length:" + len, e);
 			return "";
 		}
 	}
@@ -1229,7 +1231,7 @@ public class Hello {
 			dispatcher.include(request, wrappedResponse);
 			writer.flush();
 		} catch(Exception e) {
-			Hello.errorLog("{Hello.includePage} " + url, e);
+			Hello.errorLog("{Hello.includePage} url:" + url, e);
 		}
 		return buffer.toString();
 	}
@@ -1263,8 +1265,8 @@ public class Hello {
 			Mail mail = new Mail();
 			mail.setFrom(this.mailFrom);
 			mail.send(mailTo, subject, body, filepath != null ? new String[] { filepath } : null);
-		} catch(Exception ex) {
-			errorLog("{Hello.mail} to:" + mailTo, ex);
+		} catch(Exception e) {
+			errorLog("{Hello.mail} to:" + mailTo + ", subject:" + subject, e);
 		}
 	}
 	
@@ -1299,7 +1301,7 @@ public class Hello {
 				mail.setFrom(mailFrom);
 				mail.send(mailTo, subject, body, filepath);
 			} catch(Exception e) {
-				Hello.errorLog("{MailThread.run} to:" + mailTo, e);
+				Hello.errorLog("{MailThread.run} to:" + mailTo + ", subject:" + subject, e);
 			}
 		}
 	}	
