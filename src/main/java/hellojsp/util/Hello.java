@@ -829,6 +829,24 @@ public class Hello {
         }
 	}
 
+	public static String exec(String cmd) {
+		StringBuffer output = new StringBuffer();
+		Process p;
+		try {
+			p = Runtime.getRuntime().exec(cmd);
+			p.waitFor();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+			String line = "";			
+			while ((line = reader.readLine())!= null) {
+				output.append(line + "\n");
+			}
+		} catch (Exception e) {
+			errorLog("{Hello.exec} cmd:" + cmd, e);
+		}
+		return output.toString();
+	}	
+	
 	public static void chmod(String mode, String path) throws Exception {
 		Runtime.getRuntime().exec("chmod " + mode + " " + path);
 	}
@@ -1138,7 +1156,7 @@ public class Hello {
 	}
 
 	public static String addSlashes(String str) {
-		return replace(replace(replace(replace(replace(str, "\"", "&quot;"), "\\", "\\\\"), "\"", "\\\""), "\'", "\\\'"), "\r\n", "\\r\\n");
+		return replace(replace(replace(replace(str, "\\", "\\\\"), "\"", "\\\""), "\'", "\\\'"), "\r\n", "\\r\\n");
 	}
 
 	public static String replace(String s, String sub, String with) {

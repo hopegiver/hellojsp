@@ -24,6 +24,7 @@ public class Form {
 	public HashMap<String, FileItem> uploadedFiles = new HashMap<String, FileItem>();
 	public String errMsg = null;
 	public String uploadDir = Config.getDataDir() + "/files";
+	public String tmpDir = null;
 	public int maxFileSize = Config.getInt("maxFileSize", 1024) * 1024 * 1024;
 	public String encoding = Config.getEncoding();
 
@@ -80,6 +81,10 @@ public class Form {
 	public void setUploadDir(String dir) {
 		this.uploadDir = dir;
 	}
+
+	public void setTmpDir(String dir) {
+		this.tmpDir = dir;
+	}
 	
 	public void setDenyExt(String[] arr) {
 		this.denyExt = arr;
@@ -88,24 +93,29 @@ public class Form {
 	public void setRequest(HttpServletRequest req) {
 		this.request = req;
 
-		if(ServletFileUpload.isMultipartContent(req)) {
+		if("POST".equals(req.getMethod()) && ServletFileUpload.isMultipartContent(req)) {
 			DiskFileItemFactory factory = new DiskFileItemFactory();
 
 			// Configure a repository (to ensure a secure temp location is used)
-			File repository = (File) req.getSession().getServletContext().getAttribute("javax.servlet.context.tempdir");
+			File repository = null;
+			if(tmpDir == null) {
+				repository = (File) req.getSession().getServletContext().getAttribute("javax.servlet.context.tempdir");
+			} else {
+				repository = new File(tmpDir);
+			}
 			factory.setRepository(repository);
 
 			// Create a new file upload handler
 			ServletFileUpload upload = new ServletFileUpload(factory);
 			upload.setFileSizeMax(maxFileSize);
-			upload.setHeaderEncoding("utf-8");
+			upload.setHeaderEncoding(encoding);
 
 			// Parse the request
 			try { 
 				List<FileItem> items = upload.parseRequest(request);
 				for(FileItem item : items) {
 				    if (item.isFormField()) {
-				    	data.put(item.getFieldName(), item.getString("utf-8"));
+				    	data.put(item.getFieldName(), item.getString(encoding));
 				    } else if(item.getSize() > 0){
 				    	uploadedFiles.put(item.getFieldName(), item);
 				    }
@@ -459,7 +469,7 @@ public class Form {
 		StringBuffer sb = new StringBuffer();
 		sb.append("<script type='text/javascript'>\r\n");
 		sb.append("//<![CDATA[\r\n");
-		sb.append("function __setElement(el, v, a) { if(v) v = v.replace(/__&LT__/g, '<').replace(/__&GT__/g, '>'); if(typeof(el) != 'object' && typeof(el) != 'function') return; if(v != null) switch(el.type) { case 'text': case 'hidden': case 'password': case 'file': case 'email': el.value = v; break; case 'textarea': el.value = v; break; case 'checkbox': case 'radio': if(el.value == v) el.checked = true; else el.checked = false; break; case 'select-one': for(var i=0; i<el.options.length; i++) if(el.options[i].value == v) el.options[i].selected = true; break; default: for(var i=0; i<el.length; i++) if(el[i].value == v) el[i].checked = true; el = el[0]; break; } if(typeof(a) == 'object') { if(el.type != 'select-one' && el.length > 1) el = el[0]; for(i in a) el.setAttribute(i, a[i]); } }\r\n");
+		sb.append("function __setElement(el, v, a) { if(typeof(el) != 'object' && typeof(el) != 'function') return; if(v != null) switch(el.type) { case 'text': case 'hidden': case 'password': case 'file': case 'email': el.value = v; break; case 'textarea': el.value = v; break; case 'checkbox': case 'radio': if(el.value == v) el.checked = true; else el.checked = false; break; case 'select-one': for(var i=0; i<el.options.length; i++) if(el.options[i].value == v) el.options[i].selected = true; break; default: for(var i=0; i<el.length; i++) if(el[i].value == v) el[i].checked = true; el = el[0]; break; } if(typeof(a) == 'object') { if(el.type != 'select-one' && el.length > 1) el = el[0]; for(i in a) el.setAttribute(i, a[i]); } }\r\n");
 		sb.append("if(_f = document.forms['" + this.name + "']) {\r\n");
 
 		for(String[] element : elements) {
@@ -468,11 +478,7 @@ public class Form {
 				value = element[1];
 			}
 		    sb.append("\t__setElement(_f['" + element[0] + "'], ");
-			if(null != allowHtml && allowHtml.indexOf("[" + element[0] + "]") == -1) {
-				sb.append(value != null ? "'" + Hello.replace(Hello.replace(Hello.replace(Hello.replace(Hello.addSlashes(value), "<", "__&LT__"), ">", "__&GT__"), "&lt;", "__&LT__"), "&gt;", "__&GT__") + "'" : "null");
-			} else {
-		    	sb.append(value != null ? "'" + Hello.replace(Hello.replace(Hello.addSlashes(value), "<", "__&LT__"), ">", "__&GT__") + "'" : "null");
-			}
+	    	sb.append(value != null ? "'" + Hello.addSlashes(value) + "'" : "null");
 		    sb.append(", {" + (element[2] != null ? element[2] : "") + "});\r\n");
 		}
 		
