@@ -137,19 +137,28 @@ public class ListManager {
 	}
 
 	public void addSearch(String field, String keyword) {
-		addSearch(field, keyword, "=", 1);
+		if(!"".equals(keyword)) addSearch(field, keyword, "=", 1);
 	}
-	
+
 	public void addSearch(String field, String keyword, String oper) {
 		int type = 1;
 		if("LIKE".equals(oper.toUpperCase()) || "%LIKE%".equals(oper.toUpperCase())) type = 2;
 		else if("LIKE%".equals(oper.toUpperCase())) type = 3;
 		else if("%LIKE".equals(oper.toUpperCase())) type = 4;
-		addSearch(field, keyword, oper, type);
+		if(!"".equals(keyword)) addSearch(field, keyword, oper, type);
+	}
+
+	public void addSearch(String field, int keyword) {
+		addSearch(field, new Integer(keyword), "=", 1);
 	}
 	
-	public void addSearch(String field, String keyword, String oper, int type) {
-		if(field != null && keyword != null && !"".equals(keyword)) {
+	public void addSearch(String field, int keyword, String oper) {
+		if("=".equals(oper) || "!=".equals(oper) || "<>".equals(oper) || "<".equals(oper) || ">".equals(oper) || "<=".equals(oper) || ">=".equals(oper))
+			addSearch(field, new Integer(keyword), oper, 1);
+	}
+	
+	public void addSearch(String field, Object keyword, String oper, int type) {
+		if(field != null && keyword != null) {
 			if(type == 2) keyword = "%" + keyword + "%";
 			else if(type == 3) keyword = keyword + "%";
 			else if(type == 4) keyword = "%" + keyword;

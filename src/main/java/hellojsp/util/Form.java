@@ -469,7 +469,7 @@ public class Form {
 		StringBuffer sb = new StringBuffer();
 		sb.append("<script type='text/javascript'>\r\n");
 		sb.append("//<![CDATA[\r\n");
-		sb.append("function __setElement(el, v, a) { if(typeof(el) != 'object' && typeof(el) != 'function') return; if(v != null) switch(el.type) { case 'text': case 'hidden': case 'password': case 'file': case 'email': el.value = v; break; case 'textarea': el.value = v; break; case 'checkbox': case 'radio': if(el.value == v) el.checked = true; else el.checked = false; break; case 'select-one': for(var i=0; i<el.options.length; i++) if(el.options[i].value == v) el.options[i].selected = true; break; default: for(var i=0; i<el.length; i++) if(el[i].value == v) el[i].checked = true; el = el[0]; break; } if(typeof(a) == 'object') { if(el.type != 'select-one' && el.length > 1) el = el[0]; for(i in a) el.setAttribute(i, a[i]); } }\r\n");
+		sb.append("function __setElement(el, v, a) { if(typeof(el) != 'object' && typeof(el) != 'function') return; if(v != null) switch(el.type) { case 'checkbox': case 'radio': if(el.value == v) el.checked = true; else el.checked = false; break; case 'select-one': for(var i=0; i<el.options.length; i++) if(el.options[i].value == v) el.options[i].selected = true; break; case 'select-multiple': for(var i=0; i<el.length; i++) if(el[i].value == v) el[i].checked = true; el = el[0]; break; default: el.value = v; break; } if(typeof(a) == 'object') { if(el.type != 'select-one' && el.length > 1) el = el[0]; for(i in a) el.setAttribute(i, a[i]); } }\r\n");
 		sb.append("if(_f = document.forms['" + this.name + "']) {\r\n");
 
 		for(String[] element : elements) {

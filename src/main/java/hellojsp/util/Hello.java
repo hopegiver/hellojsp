@@ -1156,7 +1156,7 @@ public class Hello {
 	}
 
 	public static String addSlashes(String str) {
-		return replace(replace(replace(replace(str, "\\", "\\\\"), "\"", "\\\""), "\'", "\\\'"), "\r\n", "\\r\\n");
+		return replace(replace(replace(replace(replace(str, "\\", "\\\\"), "\"", "\\\""), "\'", "\\\'"), "\r\n", "\\r\\n"), "\n", "\\n");
 	}
 
 	public static String replace(String s, String sub, String with) {
