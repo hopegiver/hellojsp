@@ -32,9 +32,9 @@ public class Form {
 	private HttpServletRequest request = null;
 	private Writer out = null;
 	private boolean debug = false;
-	private String allowScript = null;
-	private String allowHtml = null;
-	private String allowIframe = null;
+	private String allowScript = "";
+	private String allowHtml = "";
+	private String allowIframe = "";
 	private String[] denyExt = {"jsp", "php", "asp", "aspx", "html", "htm", "exe", "sh"}; 
 
 	static {
@@ -139,14 +139,14 @@ public class Form {
 		element[1] = value;
 		element[2] = attributes;
 		elements.add(element);
-		if(null != attributes && attributes.indexOf("allowscript:'Y'") != -1) {
-			allowScript = (null == allowScript ? "" : allowScript) + "[" + name + "]";
+		if(null != attributes && attributes.indexOf("allow-script") != -1) {
+			allowScript += "[" + name + "]";
 		}
-		if(null != attributes && attributes.indexOf("allowhtml:'Y'") != -1) {
-			allowHtml = (null == allowHtml ? "" : allowHtml) + "[" + name + "]";
+		if(null != attributes && attributes.indexOf("allow-html") != -1) {
+			allowHtml += "[" + name + "]";
 		}
-		if(null != attributes && attributes.indexOf("allowiframe:'Y'") != -1) {
-			allowIframe = (null == allowIframe ? "" : allowIframe) + "[" + name + "]";
+		if(null != attributes && attributes.indexOf("allow-iframe") != -1) {
+			allowIframe += "[" + name + "]";
 		}
 	}
 
@@ -202,10 +202,10 @@ public class Form {
 	}
 
 	private String xss(String name, String value) {
-		if(null != allowHtml && allowHtml.indexOf("[" + name + "]") == -1) {
+		if("".equals(allowHtml) || allowHtml.indexOf("[" + name + "]") == -1) {
 			value = Hello.replace( Hello.replace(value , "<", "&lt;") , ">", "&gt;");
 		} else {
-			if(null == allowScript || allowScript.indexOf("[" + name + "]") == -1) {
+			if("".equals(allowScript) || allowScript.indexOf("[" + name + "]") == -1) {
 
 				String tail = value.endsWith(">") ? ">" : "";
 				String[] x1 = value.split(">");
