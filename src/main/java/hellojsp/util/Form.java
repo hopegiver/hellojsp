@@ -280,6 +280,10 @@ public class Form {
 		else return i;
 	}
 	
+	public String getErrMsg() {
+		return this.errMsg;
+	}
+	
 	public boolean validate() {
 		for(String[] element : elements) {
 		    try { isValid(element); } catch(Exception e) { this.errMsg = e.getMessage(); return false; }
@@ -425,7 +429,7 @@ public class Form {
 				Pattern pattern = Pattern.compile(re);
 				Matcher match = pattern.matcher(value);
 				if(match.find() == false) {
-					throw new Exception(nicname + " is not match to " + type);
+					throw new Exception(nicname + " is not valid");
 				}
 			}
 		}
@@ -441,7 +445,7 @@ public class Form {
 			Pattern pattern = Pattern.compile(re);
 			Matcher match = pattern.matcher(value);
 			if(match.find() == false) {
-				throw new Exception(nicname + " is not match to " + option);
+				throw new Exception(nicname + " is not valid");
 			}
 		}
 
