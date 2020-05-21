@@ -459,8 +459,13 @@ public class Form {
 
 		return true;
 	}
-	
+
 	public String getScript() throws Exception {
+		return getScript(null);
+	}
+	
+	public String getScript(String nm) throws Exception {
+		if(nm != null) this.name = nm;
 		StringBuffer sb = new StringBuffer();
 		sb.append("<script type='text/javascript'>\r\n");
 		sb.append("//<![CDATA[\r\n");
