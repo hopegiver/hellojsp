@@ -77,6 +77,10 @@ public class Form {
 		} catch(Exception e) {}
 	}
 	
+	public void setName(String nm) {
+		this.name = nm;
+	}
+	
 	public void setUploadDir(String dir) {
 		this.uploadDir = dir;
 	}
