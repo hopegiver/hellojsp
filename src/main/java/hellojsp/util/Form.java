@@ -34,7 +34,6 @@ public class Form {
 	private boolean debug = false;
 	private String allowScript = "";
 	private String allowHtml = "";
-	private String allowIframe = "";
 	private String[] denyExt = {"jsp", "php", "asp", "aspx", "html", "htm", "exe", "sh"}; 
 
 	static {
@@ -139,14 +138,11 @@ public class Form {
 		element[1] = value;
 		element[2] = attributes;
 		elements.add(element);
-		if(null != attributes && attributes.indexOf("allow-script") != -1) {
+		if(null != attributes && attributes.indexOf("allowscript") != -1) {
 			allowScript += "[" + name + "]";
 		}
-		if(null != attributes && attributes.indexOf("allow-html") != -1) {
+		if(null != attributes && attributes.indexOf("allowhtml") != -1) {
 			allowHtml += "[" + name + "]";
-		}
-		if(null != attributes && attributes.indexOf("allow-iframe") != -1) {
-			allowIframe += "[" + name + "]";
 		}
 	}
 
@@ -204,34 +200,29 @@ public class Form {
 	private String xss(String name, String value) {
 		if("".equals(allowHtml) || allowHtml.indexOf("[" + name + "]") == -1) {
 			value = Hello.replace( Hello.replace(value , "<", "&lt;") , ">", "&gt;");
-		} else {
-			if("".equals(allowScript) || allowScript.indexOf("[" + name + "]") == -1) {
-
-				String tail = value.endsWith(">") ? ">" : "";
-				String[] x1 = value.split(">");
-				String res = "";
-				for(int i=0; i<x1.length; i++) {
-					String[] x2 = x1[i].split("<");
-					for(int j=0; j<x2.length; j++) {
-						if(j == 0) {
-							res += x2[0];
+		}
+		else if("".equals(allowScript) || allowScript.indexOf("[" + name + "]") == -1) {
+			String tail = value.endsWith(">") ? ">" : "";
+			String[] x1 = value.split(">");
+			String res = "";
+			for(int i=0; i<x1.length; i++) {
+				String[] x2 = x1[i].split("<");
+				for(int j=0; j<x2.length; j++) {
+					if(j == 0) {
+						res += x2[0];
+					} else {
+						if(j > 0) res += "<";
+						if(j == x2.length - 1) {
+							res += x2[j].replaceAll("(?i)(x-)?(vbscript|javascript|script|expression|eval|FSCommand|onAbort|onActivate|onAfterPrint|onAfterUpdate|onBeforeActivate|onBeforeCopy|onBeforeCut|onBeforeDeactivate|onBeforeEditFocus|onBeforePaste|onBeforePrint|onBeforeUnload|onBegin|onBlur|onBounce|onCellChange|onChange|onClick|onContextMenu|onControlSelect|onCopy|onCut|onDataAvailable|onDataSetChanged|onDataSetComplete|onDblClick|onDeactivate|onDrag|onDragEnd|onDragLeave|onDragEnter|onDragOver|onDragDrop|onDrop|onEnd|onError|onErrorUpdate|onFilterChange|onFinish|onFocus|onFocusIn|onFocusOut|onHelp|onKeyDown|onKeyPress|onKeyUp|onLayoutComplete|onLoad|onLoseCapture|onMediaComplete|onMediaError|onMouseDown|onMouseEnter|onMouseLeave|onMouseMove|onMouseOut|onMouseOver|onMouseUp|onMouseWheel|onMove|onMoveEnd|onMoveStart|onOutOfSync|onPaste|onPause|onProgress|onPropertyChange|onReadyStateChange|onRepeat|onReset|onResize|onResizeEnd|onResizeStart|onResume|onReverse|onRowsEnter|onRowExit|onRowDelete|onRowInserted|onScroll|onSeek|onSelect|onSelectionChange|onSelectStart|onStart|onStop|onSyncRestored|onSubmit|onTimeError|onTrackChange|onUnload|onURLFlip|seekSegmentTime)", "x-$2");
 						} else {
-							if(j > 0) res += "<";
-							if(j == x2.length - 1) {
-								res += x2[j].replaceAll("(?i)(x-)?(vbscript|javascript|script|expression|eval|FSCommand|onAbort|onActivate|onAfterPrint|onAfterUpdate|onBeforeActivate|onBeforeCopy|onBeforeCut|onBeforeDeactivate|onBeforeEditFocus|onBeforePaste|onBeforePrint|onBeforeUnload|onBegin|onBlur|onBounce|onCellChange|onChange|onClick|onContextMenu|onControlSelect|onCopy|onCut|onDataAvailable|onDataSetChanged|onDataSetComplete|onDblClick|onDeactivate|onDrag|onDragEnd|onDragLeave|onDragEnter|onDragOver|onDragDrop|onDrop|onEnd|onError|onErrorUpdate|onFilterChange|onFinish|onFocus|onFocusIn|onFocusOut|onHelp|onKeyDown|onKeyPress|onKeyUp|onLayoutComplete|onLoad|onLoseCapture|onMediaComplete|onMediaError|onMouseDown|onMouseEnter|onMouseLeave|onMouseMove|onMouseOut|onMouseOver|onMouseUp|onMouseWheel|onMove|onMoveEnd|onMoveStart|onOutOfSync|onPaste|onPause|onProgress|onPropertyChange|onReadyStateChange|onRepeat|onReset|onResize|onResizeEnd|onResizeStart|onResume|onReverse|onRowsEnter|onRowExit|onRowDelete|onRowInserted|onScroll|onSeek|onSelect|onSelectionChange|onSelectStart|onStart|onStop|onSyncRestored|onSubmit|onTimeError|onTrackChange|onUnload|onURLFlip|seekSegmentTime)", "x-$2");
-							} else {
-								res += x2[j];
-							}
+							res += x2[j];
 						}
 					}
-					if(i + 1 < x1.length) res += ">";
 				}
-				res += tail;
-				value = res;
+				if(i + 1 < x1.length) res += ">";
 			}
-			if(null == allowIframe || allowIframe.indexOf("[" + name + "]") == -1) {
-				value = value.replaceAll("(?i)<iframe[^>]*>", "").replaceAll("(?i)</iframe>", "");
-			}
+			res += tail;
+			value = res;
 		}
 		return value;
 	}
