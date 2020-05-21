@@ -38,7 +38,7 @@ public class Form {
 
 	static {
 		options.put("email", "^[a-z0-9A-Z\\_\\.\\-]+@([a-z0-9A-Z\\.\\-]+)\\.([a-zA-Z]+)$");
-		options.put("url", "^(http:\\/\\/)(.+)");
+		options.put("url", "^(http(s)?:\\/\\/)(.+)");
 		options.put("number", "^-?[\\,0-9]+$");
 		options.put("domain", "^([a-z0-9]+)([a-z0-9\\.\\-]+)\\.([a-z]{2,4})$");
 		options.put("engonly", "^([a-zA-Z]+)$");
@@ -352,9 +352,7 @@ public class Form {
 				String[] arr2 = null;
 				arr2 = arr[i].split("[=:]");
 				if(arr2.length == 2) {
-					String key = arr2[0].trim().toUpperCase();
-					if("TYPE".equals(key)) key = "OPTION";
-					map.put(key, arr2[1].replace('\'', '\0').trim());
+					map.put(arr2[0].trim().toUpperCase(), arr2[1].replace('\'', '\0').trim());
 				}
 			}
 		}
@@ -420,6 +418,18 @@ public class Form {
 			}
 		}
 
+		if(attributes.containsKey("TYPE") && !"".equals(value)) {
+			String type = attributes.get("TYPE");
+			String re = options.get(type);
+			if(re != null) {
+				Pattern pattern = Pattern.compile(re);
+				Matcher match = pattern.matcher(value);
+				if(match.find() == false) {
+					throw new Exception(nicname + " is not match to " + type);
+				}
+			}
+		}
+		
 		if(attributes.containsKey("OPTION") && !"".equals(value)) {
 			String option = attributes.get("OPTION");
 			if("number".equals(option)) {
@@ -435,6 +445,15 @@ public class Form {
 			}
 		}
 
+		if(attributes.containsKey("PATTERN") && !"".equals(value)) {
+			String re = attributes.get("PATTERN");
+			Pattern pattern = Pattern.compile(re);
+			Matcher match = pattern.matcher(value);
+			if(match.find() == false) {
+				throw new Exception(nicname + " is not match to " + re);
+			}
+		}
+		
 		if(attributes.containsKey("ALLOW")) {
 			String filename = getFileName(name);
 			String re = attributes.get("ALLOW");
