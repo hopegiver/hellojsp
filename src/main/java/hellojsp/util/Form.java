@@ -352,7 +352,9 @@ public class Form {
 				String[] arr2 = null;
 				arr2 = arr[i].split("[=:]");
 				if(arr2.length == 2) {
-					map.put(arr2[0].trim().toUpperCase(), arr2[1].replace('\'', '\0').trim());
+					String key = arr2[0].trim().toUpperCase();
+					if("TYPE".equals(key)) key = "OPTION";
+					map.put(key, arr2[1].replace('\'', '\0').trim());
 				}
 			}
 		}
