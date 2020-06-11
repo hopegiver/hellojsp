@@ -20,8 +20,8 @@ import hellojsp.util.Hello;
 
 public class DB {
 
-	private static HashMap<String, SqlSessionFactory> sqlSessionFactoryMap = new HashMap<String, SqlSessionFactory>();
-	private static HashMap<String, String> productMap = new HashMap<String, String>();
+	private static final HashMap<String, SqlSessionFactory> sqlSessionFactoryMap = new HashMap<String, SqlSessionFactory>();
+	private static final HashMap<String, String> productMap = new HashMap<String, String>();
 	
 	private String databaseId = "default";
 	private SqlSession _session = null;
@@ -55,12 +55,12 @@ public class DB {
 	
 	public void setError(String msg) {
 		this.errMsg = msg;
-		if(debug == true) {
+		if(debug) {
 			try {
 				if(null != out) 
 					out.write("<hr>" + Hello.nl2br(msg) + "<hr>");
 				else Hello.errorLog(msg);
-			} catch(Exception e) {}
+			} catch(Exception ignored) {}
 		}
 	}
 
@@ -72,7 +72,7 @@ public class DB {
 		return this.errMsg;
 	}
 
-	public SqlSessionFactory getSqlSessionFactory() throws Exception {
+	private SqlSessionFactory getSqlSessionFactory() throws Exception {
 		SqlSessionFactory sqlSessionFactory = sqlSessionFactoryMap.get(databaseId);
 		if(sqlSessionFactory == null) {
 			String resource = "config/mybatis-config.xml";
@@ -88,12 +88,12 @@ public class DB {
 	}
 	
 	public SqlSession getSqlSession() {
-		if(this.autoCommit == false && this._session != null) return _session;
+		if(!autoCommit && this._session != null) return _session;
 		SqlSession session = null;
 		try {
 			SqlSessionFactory sqlSessionFactory = getSqlSessionFactory();
 			session = sqlSessionFactory.openSession();
-			if(this.autoCommit == false) _session = session;
+			if(!autoCommit) _session = session;
 		} catch(Exception e) {
 			setError(e.getMessage());
 			Hello.errorLog("{DB.getSqlSession} " + e.getMessage(), e);
@@ -123,7 +123,7 @@ public class DB {
 		else _session.rollback();
 		_session.close();
 		_session = null;
-		this.autoCommit = true;
+		autoCommit = true;
 	}
 	
 	public String getProduct() {
@@ -160,60 +160,60 @@ public class DB {
 			setError(e.getMessage());
 			Hello.errorLog("{DB.select} " + e.getMessage(), e);
 		} finally {
-			if(this.autoCommit == true) session.close();
+			if(autoCommit) session.close();
 		}
 		return ret;
 	}
 	
 	public int insert(String statement, Object parameters) {
-		if(this.autoCommit == false && this.errMsg != null) return 0;
+		if(!autoCommit && errMsg != null) return 0;
 		SqlSession session = getSqlSession();
 		int ret = 0;
 		try {
 			ret = session.insert(statement, parameters);
-			if(this.autoCommit == true) session.commit();
+			if(autoCommit) session.commit();
 		} catch(Exception e) {
 			setError(e.getMessage());
 			Hello.errorLog("{DB.insert} " + e.getMessage(), e);
 		} finally {
-			if(this.autoCommit == true) session.close();
+			if(autoCommit) session.close();
 		}
 		return ret;
 	}
 
 	public int update(String statement, Object parameters) {
-		if(this.autoCommit == false && this.errMsg != null) return 0;
+		if(!autoCommit && errMsg != null) return 0;
 		SqlSession session = getSqlSession();
 		int ret = 0;
 		try {
 			ret = session.update(statement, parameters);
-			if(this.autoCommit == true) session.commit();
+			if(autoCommit) session.commit();
 		} catch(Exception e) {
 			setError(e.getMessage());
 			Hello.errorLog("{DB.update} " + e.getMessage(), e);
 		} finally {
-			if(this.autoCommit == true) session.close();
+			if(autoCommit) session.close();
 		}
 		return ret;
 	}
 
 	public int delete(String statement, Object parameters) {
-		if(this.autoCommit == false && this.errMsg != null) return 0;
+		if(!autoCommit && errMsg != null) return 0;
 		SqlSession session = getSqlSession();
 		int ret = 0;
 		try {
 			ret = session.delete(statement, parameters);
-			if(this.autoCommit == true) session.commit();
+			if(autoCommit) session.commit();
 		} catch(Exception e) {
 			setError(e.getMessage());
 			Hello.errorLog("{DB.delete} " + e.getMessage(), e);
 		} finally {
-			if(this.autoCommit == true) session.close();
+			if(autoCommit) session.close();
 		}
 		return ret;
 	}
 
-	public DataSet query(String query) throws Exception {
+	public DataSet query(String query) {
 		return query(query, null);
 	}
 	
@@ -237,11 +237,11 @@ public class DB {
 			records = new DataSet(rs);
 		} catch(Exception e) {
 			setError(e.getMessage());
-			Hello.errorLog("{DB.query} " + query + " => " + e.getMessage() + "\n" + args.toString(), e);
+			Hello.errorLog("{DB.query} " + query + " => " + e.getMessage() + "\n" + Arrays.toString(args), e);
 		} finally {
-			if(rs != null) try { rs.close(); } catch(Exception e) {}
-			if(pstmt != null) try { pstmt.close(); } catch(Exception e) {}
-			if(this.autoCommit == true) {
+			if(rs != null) try { rs.close(); } catch(Exception ignored) {}
+			if(pstmt != null) try { pstmt.close(); } catch(Exception ignored) {}
+			if(autoCommit) {
 				session.close();
 			}
 		}
@@ -264,7 +264,7 @@ public class DB {
 		try {
 			setError(query);
 			setError(Arrays.toString(args));
-			if(insertId == true) {
+			if(insertId) {
 				pstmt = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
 			} else {
 				pstmt = conn.prepareStatement(query);
@@ -273,18 +273,18 @@ public class DB {
 				for(int i=0; i<args.length; i++) pstmt.setObject(i+1, args[i]);
 			}
 			ret = pstmt.executeUpdate();
-			if(insertId == true && ret == 1) {
+			if(insertId && ret == 1) {
 				ResultSet rs = pstmt.getGeneratedKeys();
 				if (rs != null && rs.next()) {
-					try { newId = rs.getInt(1); } catch(Exception e) {} finally { rs.close(); }
+					try { newId = rs.getInt(1); } catch(Exception ignored) {} finally { rs.close(); }
 				}
 			}
 		} catch(Exception e) {
 			setError(e.getMessage());
-			Hello.errorLog("{DB.execute} " + query + " => " + e.getMessage() + "\n" + args.toString(), e);
+			Hello.errorLog("{DB.execute} " + query + " => " + e.getMessage() + "\n" + Arrays.toString(args), e);
 		} finally {
-			if(pstmt != null) try { pstmt.close(); } catch(Exception e) {}
-			if(this.autoCommit == true) {
+			if(pstmt != null) try { pstmt.close(); } catch(Exception ignored) {}
+			if(autoCommit) {
 				session.close();
 			}
 		}
@@ -327,7 +327,7 @@ public class DB {
 			setError(e.getMessage());
 			Hello.errorLog("{DB.call} " + query + " => " + e.getMessage(), e);
 		} finally {
-			if(stmt != null) try { stmt.close(); } catch(Exception e) {}
+			if(stmt != null) try { stmt.close(); } catch(Exception ignored) {}
 			session.close();
 		}
 		return ret;

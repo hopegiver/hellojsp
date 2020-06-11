@@ -1,5 +1,6 @@
 package hellojsp.db;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
@@ -30,7 +31,7 @@ public class ListManager {
 	public String errMsg = null;
 
 	private String listQuery = null;
-	private ArrayList<Object> params = new ArrayList<Object>();
+	private final ArrayList<Object> params = new ArrayList<Object>();
 	private Writer out = null;
 	private HttpServletRequest request = null;
 	public String pageVar = "page";
@@ -123,7 +124,7 @@ public class ListManager {
 		addWhere(where, new Object[] {});
 	}
 	public void addWhere(String where, List<Object> list) {
-		addWhere(where, list.toArray(new Object[list.size()]));
+		addWhere(where, list.toArray(new Object[0]));
 	}
 	public void addWhere(String where, Object[] args) {
 		if(where != null && !"".equals(where)) {
@@ -132,7 +133,7 @@ public class ListManager {
 			} else {
 				this.where = this.where + " AND " + where;
 			}
-			for(int i=0; i<args.length; i++) params.add(args[i]);
+			Collections.addAll(params, args);
 		}
 	}
 
@@ -149,12 +150,12 @@ public class ListManager {
 	}
 
 	public void addSearch(String field, int keyword) {
-		addSearch(field, new Integer(keyword), "=", 1);
+		addSearch(field, keyword, "=", 1);
 	}
 	
 	public void addSearch(String field, int keyword, String oper) {
 		if("=".equals(oper) || "!=".equals(oper) || "<>".equals(oper) || "<".equals(oper) || ">".equals(oper) || "<=".equals(oper) || ">=".equals(oper))
-			addSearch(field, new Integer(keyword), oper, 1);
+			addSearch(field, keyword, oper, 1);
 	}
 	
 	public void addSearch(String field, Object keyword, String oper, int type) {
@@ -168,12 +169,12 @@ public class ListManager {
 					params.add(keyword);
 				}
 			} else {
-				String[] fields = field.split("\\,");
+				String[] fields = field.split(",");
 				ArrayList<String> v = new ArrayList<String>();
-				for(int i=0; i<fields.length; i++) {
-					field = fields[i].trim();
-					if(!"".equals(field)) {
-						v.add(fields[i].trim() + " " + oper.replace("%", "") + " ?");
+				for (String s : fields) {
+					field = s.trim();
+					if (!"".equals(field)) {
+						v.add(s.trim() + " " + oper.replace("%", "") + " ?");
 						params.add(keyword);
 					}
 				}
@@ -186,28 +187,28 @@ public class ListManager {
 		this.listMode = mode;
 	}
 
-	public int getTotalNum() throws Exception {
+	public int getTotalNum() {
 		if(this.totalNum > 0) return this.totalNum;
 		
-		StringBuffer sb = new StringBuffer();
-		sb.append("SELECT count(*) AS count FROM " + table);
-		if(where != null) sb.append(" WHERE " + where); 
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT count(*) AS count FROM ").append(table);
+		if(where != null) sb.append(" WHERE ").append(where);
 		String sql = sb.toString();
 
 		//Temporary Add
 		if(groupby != null) {
-			sb.append(" GROUP BY " + groupby);
+			sb.append(" GROUP BY ").append(groupby);
 			sql = sb.toString();
 			sql = "SELECT COUNT(*) count FROM (" + sql + ") ZA";
 		}
 
 		DB db = null;
-		DataSet rs = null;
+		DataSet rs;
 		try {
 			long stime = System.currentTimeMillis();
 
 			db = new DB(databaseId);
-			if(debug == true) db.setDebug(out);
+			if(debug) db.setDebug(out);
 			
 			if(params.size() > 0) rs = db.query(sql, params.toArray());
 			else rs = db.query(sql);
@@ -220,11 +221,11 @@ public class ListManager {
 			db.close();
 
 			long etime = System.currentTimeMillis();
-			if(debug == true && null != out) {
+			if(debug && null != out) {
 				out.write("<hr>Execution Time : " + (etime - stime) + " (1/1000 sec)<hr>");
 			}
 		} catch(Exception e) {
-			this.errMsg = db.errMsg;
+			if(db != null) this.errMsg = db.errMsg;
 			Hello.errorLog("{ListManager.getTotalNum} " + e.getMessage(), e);
 		} finally {
 			if(db != null) db.close();
@@ -245,45 +246,45 @@ public class ListManager {
 		if(pageNum < 1) pageNum = 1;
 	
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		String dbType = getDBType();
 		if("mssql".equals(dbType) || "db2".equals(dbType)) {
 			sb.append("SELECT ZA.* FROM (");
-			sb.append(" SELECT ROW_NUMBER() OVER(ORDER BY " + orderby + ") AS RowNum, " + this.fields);
-			sb.append(" FROM " + this.table); 
-			if(where != null) sb.append(" WHERE " + where);
-			if(groupby != null) sb.append(" GROUP BY " + groupby);
-			sb.append(") ZA WHERE ZA.RowNum BETWEEN ("+ pageNum +" - 1) * "+ listNum +" + 1 AND " + (pageNum * listNum) + " ORDER BY ZA.RowNum ASC");
+			sb.append(" SELECT ROW_NUMBER() OVER(ORDER BY ").append(orderby).append(") AS RowNum, ").append(this.fields);
+			sb.append(" FROM ").append(this.table);
+			if(where != null) sb.append(" WHERE ").append(where);
+			if(groupby != null) sb.append(" GROUP BY ").append(groupby);
+			sb.append(") ZA WHERE ZA.RowNum BETWEEN (").append(pageNum).append(" - 1) * ").append(listNum).append(" + 1 AND ").append(pageNum * listNum).append(" ORDER BY ZA.RowNum ASC");
 		} else {
 			int startNum = (pageNum - 1) * listNum;
 
 			if("oracle".equals(dbType)) {
 				sb.append("SELECT ZB.* FROM (SELECT  rownum as dbo_rownum, ZA.* FROM (");
 			}
-			sb.append("SELECT "+ fields +" FROM " + table);
-			if(where != null) sb.append(" WHERE " + where); 
-			if(groupby != null) sb.append(" GROUP BY " + groupby);
-			if(orderby != null) sb.append(" ORDER BY " + orderby); 
+			sb.append("SELECT ").append(fields).append(" FROM ").append(table);
+			if(where != null) sb.append(" WHERE ").append(where);
+			if(groupby != null) sb.append(" GROUP BY ").append(groupby);
+			if(orderby != null) sb.append(" ORDER BY ").append(orderby);
 
 			if("oracle".equals(dbType)) {
-				sb.append(") ZA WHERE rownum  <= " + (startNum + listNum) + ") ZB WHERE dbo_rownum > "  + startNum);
+				sb.append(") ZA WHERE rownum  <= ").append(startNum + listNum).append(") ZB WHERE dbo_rownum > ").append(startNum);
 			} else {
-				sb.append(" LIMIT " + startNum + ", " + listNum);
+				sb.append(" LIMIT ").append(startNum).append(", ").append(listNum);
 			}
 		}
 		return sb.toString();
 	}
 
 
-	public DataSet getDataSet() throws Exception {
+	public DataSet getDataSet() {
 		if(listMode == 1) totalNum = this.getTotalNum();
 		DB db = null;
-		DataSet rs = null;
+		DataSet rs;
 		try {
 			long stime = System.currentTimeMillis();
 		
 			db = new DB(databaseId);
-			if(debug == true) db.setDebug(out);
+			if(debug) db.setDebug(out);
 
 			if(params.size() > 0) rs = db.query(getListQuery(), params.toArray());
 			else rs = db.query(getListQuery());
@@ -292,21 +293,29 @@ public class ListManager {
 			db.close();
 
 			long etime = System.currentTimeMillis();
-			if(debug == true && null != out) {
+			if(debug && null != out) {
 				out.write("<hr>Execution Time : " + (etime - stime) + " (1/1000 sec)<hr>");
 			}
 		} catch(Exception e) {
+			Hello.errorLog("{ListManager.getDataSet}", e);
+			if(db != null) this.errMsg = db.errMsg;
 			rs = new DataSet();
-			this.errMsg = db.errMsg;
-			Hello.errorLog("{ListManager.getDataSet} " + e.getMessage(), e);
 		} finally {
 			if(db != null) db.close();
+		}
+
+		if(rs != null && listMode == 1) {
+			for(int j=0; rs.next(); j++) {
+				rs.put("__ord", totalNum - (pageNum - 1) * listNum - j);
+				rs.put("__asc", (pageNum - 1) * listNum + j + 1);
+			}
+			rs.first();
 		}
 
 		return rs;
 	}
 	
-	public String getPaging(int linkType) throws Exception {
+	public String getPaging(int linkType) {
 
 		Pager pg = new Pager(request);
 		pg.setPageVar(pageVar);
@@ -319,11 +328,11 @@ public class ListManager {
 		return pg.getPager();
 	}
 
-	public String getPaging() throws Exception {
+	public String getPaging() {
 		return this.getPaging(linkType);
 	}
 
-	public DataSet getPageData() throws Exception { 
+	public DataSet getPageData() {
 		Pager pg = new Pager(request);
 		pg.setPageVar(pageVar);
 		pg.setTotalNum(totalNum);

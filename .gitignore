@@ -1,4 +1,7 @@
+/lib/
 /target/
+/.idea/
 /.settings/
 .classpath
 .project
+hellojsp.iml

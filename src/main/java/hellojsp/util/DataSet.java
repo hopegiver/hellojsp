@@ -23,26 +23,27 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 	public DataSet() {}
 	
 	public DataSet(List<?> list) {
-		for(int i=0; i<list.size(); i++) this.addRow((Map<?, ?>)list.get(i));
+		for (Object o : list) this.addRow((Map<?, ?>) o);
 		this.first();
 	}
 	
-	public DataSet(ResultSet rs) throws Exception {
+	public DataSet(ResultSet rs) {
+		try {
 			ResultSetMetaData meta = rs.getMetaData();
 			int columnCount = meta.getColumnCount();
-			while(rs.next()) {
+			while (rs.next()) {
 				this.addRow();
-				for(int i = 1; i <= columnCount; i++) {
+				for (int i = 1; i <= columnCount; i++) {
 					String column = meta.getColumnLabel(i).toLowerCase();
 					try {
-						if(meta.getColumnType(i) == java.sql.Types.CLOB) {
+						if (meta.getColumnType(i) == java.sql.Types.CLOB) {
 							this.put(column, rs.getString(i));
-						} else if(meta.getColumnType(i) == java.sql.Types.DATE) {
+						} else if (meta.getColumnType(i) == java.sql.Types.DATE) {
 							this.put(column, rs.getTimestamp(i));
 						} else {
 							this.put(column, rs.getObject(i));
 						}
-					} catch(Exception e) {
+					} catch (Exception e) {
 						this.put(column, "");
 						Hello.errorLog("{DataSet.resultset} " + e.getMessage(), e);
 					}
@@ -50,6 +51,7 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 			}
 			rs.close();
 			this.first();
+		} catch (Exception ignored) {}
 	}
 	
 	public DataSet(DataSet ds) {
@@ -58,11 +60,13 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 			this.addRow(ds.getRow());
 		}
 		this.first();
+		this.columns = ds.columns;
+		this.types = ds.types;
+		this.sortType = ds.sortType;
 	}
 
 	public boolean next() {
 		if(this.size() <= (idx + 1)) return false;
-		
 		idx = idx + 1;
 		return true;
 	}
@@ -77,18 +81,16 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 		return idx;
 	}
 
-	public int addRow() {
+	public void addRow() {
 		this.add(new HashMap<String, Object>());
 		idx++;
-		return idx;
 	}
 
-	public int addRow(HashMap<String, Object> map) {
+	public void addRow(HashMap<String, Object> map) {
 		if(map != null) {
 			this.add(map);
 			idx++;
 		}
-		return idx;
 	}
 
 	public int addRow(Hashtable<String, Object> map) {
@@ -99,12 +101,11 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 		return idx;
 	}
 	
-	public int addRow(Map<?,?> map) {
+	public void addRow(Map<?,?> map) {
 		if(map != null) {
 			this.addRow();
 			for(Object key : map.keySet()) this.put(key.toString(),  map.get(key));
 		}
-		return idx;
 	}
 
 	public boolean updateRow(HashMap<String, Object> data) {
@@ -126,11 +127,6 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 	public boolean updateRow(int id, HashMap<String, Object> data) {
 		if(!move(id)) return false;
 		return updateRow(data);
-	}
-
-	public void removeAll() {
-		this.removeAll();
-		idx = -1;
 	}
 
 	public boolean prev() {
@@ -162,7 +158,7 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 	}
 
 	public void put(String name, boolean b) {
-		this.put(name, new Boolean(b));
+		this.put(name, Boolean.valueOf(b));
 	}
 
 	public void put(String name, Object value) {
@@ -299,7 +295,7 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 		if(idx > -1) {
 			HashMap<String, Object> map = get(idx);
 			if(map != null) 
-				return map.keySet().toArray(new String[map.size()]);
+				return map.keySet().toArray(new String[0]);
 		}
 		return new String[] {};
 	}
@@ -326,18 +322,12 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 		DataSet list = new DataSet();
 		this.first();
 		while(this.next()) {
-			boolean flag = false;
-			if("%".equals(op)) {
-				flag = getString(key).indexOf(value) != -1;
-			} else if("!%".equals(op)) {
-				flag = getString(key).indexOf(value) == -1;
-			} else if("!".equals(op)) {
-				flag = !getString(key).equals(value);
-			} else if("^".equals(op)) {
-				flag = getString(key).matches(value);
-			} else {
-				flag = getString(key).equals(value);
-			}
+			boolean flag;
+			if("%".equals(op)) flag = getString(key).contains(value);
+			else if("!%".equals(op)) flag = !getString(key).contains(value);
+			else if("!".equals(op)) flag = !getString(key).equals(value);
+			else if("^".equals(op)) flag = getString(key).matches(value);
+			else flag = getString(key).equals(value);
 			if(flag) list.addRow(getRow());
 		}
 		this.first();
@@ -353,7 +343,7 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 		return new JSONArray(this).toString();
 	}
 	
-	public void fromJson(String str) throws Exception {
+	public void fromJson(String str) {
 		JSONArray arr = new JSONArray(str);
 		this.removeAll();
 		for(int i=0; i<arr.length(); i++) {
@@ -364,6 +354,11 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 			}
 			this.addRow(map);
 		}
+	}
+
+	private void removeAll() {
+		this.clear();
+		this.idx = -1;
 	}
 
 }

@@ -11,7 +11,7 @@ public class Config {
 	private static String dataDir;
 	private static String logDir;
 	private static String encoding = "UTF-8";
-	private static HashMap<String, String> data = new HashMap<String, String>();
+	private static final HashMap<String, String> data = new HashMap<String, String>();
 
 	public static void init(HttpServletRequest req) {
 		init(req, null);
@@ -43,7 +43,7 @@ public class Config {
 		loaded = true;
 	}
 
-	private static void parse(String path) throws Exception {
+	private static void parse(String path) {
 		XML xml = new XML(path);
 		DataSet rs = xml.getDataSet("//config/env");
 		if(rs.next()) {
@@ -92,7 +92,7 @@ public class Config {
 		String ret = data.get(key);
 		if(ret == null) return defaultValue;
 		else {
-			try { return Integer.parseInt(ret); } catch(Exception e) { }
+			try { return Integer.parseInt(ret); } catch(Exception ignored) { }
 			return 0;
 		}
 	}

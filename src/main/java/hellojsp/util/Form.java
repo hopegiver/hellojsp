@@ -28,7 +28,7 @@ public class Form {
 	public int maxFileSize = Config.getInt("maxFileSize", 1024) * 1024 * 1024;
 	public String encoding = Config.getEncoding();
 
-	private static HashMap<String, String> options = new HashMap<String, String>();
+	private static final HashMap<String, String> options = new HashMap<String, String>();
 	private HttpServletRequest request = null;
 	private Writer out = null;
 	private boolean debug = false;
@@ -39,7 +39,7 @@ public class Form {
 	static {
 		options.put("email", "^[a-z0-9A-Z\\_\\.\\-]+@([a-z0-9A-Z\\.\\-]+)\\.([a-zA-Z]+)$");
 		options.put("url", "^(http(s)?:\\/\\/)(.+)");
-		options.put("number", "^-?[\\,0-9]+$");
+		options.put("number", "^-?[,0-9]+$");
 		options.put("domain", "^([a-z0-9]+)([a-z0-9\\.\\-]+)\\.([a-z]{2,4})$");
 		options.put("engonly", "^([a-zA-Z]+)$");
 	}
@@ -72,9 +72,9 @@ public class Form {
 
 	public void setError(String msg, Exception ex) {
 		try {
-			if(null != out && debug == true) out.write("<hr>" + msg + "###" + ex + "<hr>");
-			if(ex != null || debug == true) Hello.errorLog(msg, ex);
-		} catch(Exception e) {}
+			if(null != out && debug) out.write("<hr>" + msg + "###" + ex + "<hr>");
+			if(ex != null || debug) Hello.errorLog(msg, ex);
+		} catch(Exception ignored) {}
 	}
 	
 	public void setName(String nm) {
@@ -100,7 +100,7 @@ public class Form {
 			DiskFileItemFactory factory = new DiskFileItemFactory();
 
 			// Configure a repository (to ensure a secure temp location is used)
-			File repository = null;
+			File repository;
 			if(tmpDir == null) {
 				repository = (File) req.getSession().getServletContext().getAttribute("javax.servlet.context.tempdir");
 			} else {
@@ -128,9 +128,9 @@ public class Form {
 				Hello.errorLog("{Form.setRequest} Multipart Parsing Error", e);
 			}
 		} else {
-			Enumeration<String> e = req.getParameterNames();
+			Enumeration e = req.getParameterNames();
 			while(e.hasMoreElements()) {
-				String key = e.nextElement();
+				String key = e.nextElement().toString();
 				data.put(key, request.getParameter(key));
 			}			
 		}
@@ -142,10 +142,10 @@ public class Form {
 		element[1] = value;
 		element[2] = attributes;
 		elements.add(element);
-		if(null != attributes && attributes.indexOf("allowscript") != -1) {
+		if(null != attributes && attributes.contains("allowscript")) {
 			allowScript += "[" + name + "]";
 		}
-		if(null != attributes && attributes.indexOf("allowhtml") != -1) {
+		if(null != attributes && attributes.contains("allowhtml")) {
 			allowHtml += "[" + name + "]";
 		}
 	}
@@ -184,7 +184,6 @@ public class Form {
 
 	public String glue(String delim, String names) {
 		String[] vars = names.split(",");
-		if(vars == null) return "";
 		for(int i=0; i<vars.length; i++) {
 			vars[i] = get(vars[i].trim());
 		}
@@ -202,42 +201,41 @@ public class Form {
 	}
 
 	private String xss(String name, String value) {
-		if("".equals(allowHtml) || allowHtml.indexOf("[" + name + "]") == -1) {
+		if("".equals(allowHtml) || !allowHtml.contains("[" + name + "]")) {
 			value = Hello.replace( Hello.replace(value , "<", "&lt;") , ">", "&gt;");
 		}
-		else if("".equals(allowScript) || allowScript.indexOf("[" + name + "]") == -1) {
+		else if("".equals(allowScript) || !allowScript.contains("[" + name + "]")) {
 			String tail = value.endsWith(">") ? ">" : "";
 			String[] x1 = value.split(">");
-			String res = "";
+			StringBuilder res = new StringBuilder();
 			for(int i=0; i<x1.length; i++) {
 				String[] x2 = x1[i].split("<");
 				for(int j=0; j<x2.length; j++) {
 					if(j == 0) {
-						res += x2[0];
+						res.append(x2[0]);
 					} else {
-						if(j > 0) res += "<";
+						res.append("<");
 						if(j == x2.length - 1) {
-							res += x2[j].replaceAll("(?i)(x-)?(vbscript|javascript|script|expression|eval|FSCommand|onAbort|onActivate|onAfterPrint|onAfterUpdate|onBeforeActivate|onBeforeCopy|onBeforeCut|onBeforeDeactivate|onBeforeEditFocus|onBeforePaste|onBeforePrint|onBeforeUnload|onBegin|onBlur|onBounce|onCellChange|onChange|onClick|onContextMenu|onControlSelect|onCopy|onCut|onDataAvailable|onDataSetChanged|onDataSetComplete|onDblClick|onDeactivate|onDrag|onDragEnd|onDragLeave|onDragEnter|onDragOver|onDragDrop|onDrop|onEnd|onError|onErrorUpdate|onFilterChange|onFinish|onFocus|onFocusIn|onFocusOut|onHelp|onKeyDown|onKeyPress|onKeyUp|onLayoutComplete|onLoad|onLoseCapture|onMediaComplete|onMediaError|onMouseDown|onMouseEnter|onMouseLeave|onMouseMove|onMouseOut|onMouseOver|onMouseUp|onMouseWheel|onMove|onMoveEnd|onMoveStart|onOutOfSync|onPaste|onPause|onProgress|onPropertyChange|onReadyStateChange|onRepeat|onReset|onResize|onResizeEnd|onResizeStart|onResume|onReverse|onRowsEnter|onRowExit|onRowDelete|onRowInserted|onScroll|onSeek|onSelect|onSelectionChange|onSelectStart|onStart|onStop|onSyncRestored|onSubmit|onTimeError|onTrackChange|onUnload|onURLFlip|seekSegmentTime)", "x-$2");
+							res.append(x2[j].replaceAll("(?i)(x-)?(vbscript|javascript|script|expression|eval|FSCommand|onAbort|onActivate|onAfterPrint|onAfterUpdate|onBeforeActivate|onBeforeCopy|onBeforeCut|onBeforeDeactivate|onBeforeEditFocus|onBeforePaste|onBeforePrint|onBeforeUnload|onBegin|onBlur|onBounce|onCellChange|onChange|onClick|onContextMenu|onControlSelect|onCopy|onCut|onDataAvailable|onDataSetChanged|onDataSetComplete|onDblClick|onDeactivate|onDrag|onDragEnd|onDragLeave|onDragEnter|onDragOver|onDragDrop|onDrop|onEnd|onError|onErrorUpdate|onFilterChange|onFinish|onFocus|onFocusIn|onFocusOut|onHelp|onKeyDown|onKeyPress|onKeyUp|onLayoutComplete|onLoad|onLoseCapture|onMediaComplete|onMediaError|onMouseDown|onMouseEnter|onMouseLeave|onMouseMove|onMouseOut|onMouseOver|onMouseUp|onMouseWheel|onMove|onMoveEnd|onMoveStart|onOutOfSync|onPaste|onPause|onProgress|onPropertyChange|onReadyStateChange|onRepeat|onReset|onResize|onResizeEnd|onResizeStart|onResume|onReverse|onRowsEnter|onRowExit|onRowDelete|onRowInserted|onScroll|onSeek|onSelect|onSelectionChange|onSelectStart|onStart|onStop|onSyncRestored|onSubmit|onTimeError|onTrackChange|onUnload|onURLFlip|seekSegmentTime)", "x-$2"));
 						} else {
-							res += x2[j];
+							res.append(x2[j]);
 						}
 					}
 				}
-				if(i + 1 < x1.length) res += ">";
+				if(i + 1 < x1.length) res.append(">");
 			}
-			res += tail;
-			value = res;
+			res.append(tail);
+			value = res.toString();
 		}
 		return value;
 	}
 
 	public HashMap<String, Object> getMap(String name) {
 		HashMap<String, Object> map = new HashMap<String, Object>();
-		int len = name.length();
 		try {
-			for(String key : map.keySet()){
+			for(String key : data.keySet()) {
 				if(key.matches("^(" + name + ")(.+)$")) {
-					map.put(key.substring(len), xss(key, data.get(key).toString()));
+					map.put(key, get(key));
 				}
 			}
 		} catch(Exception ex) {
@@ -256,7 +254,7 @@ public class Form {
 
 	public int getInt(String name, int i) {
 		String str = get(name);
-		if(str.matches("^-?[\\,0-9]+$")) return Integer.parseInt(Hello.replace(str, ",", ""));
+		if(str.matches("^-?[,0-9]+$")) return Integer.parseInt(Hello.replace(str, ",", ""));
 		else return i;
 	}
 
@@ -266,7 +264,7 @@ public class Form {
 
 	public long getLong(String name, long i) {
 		String str = get(name);
-		if(str.matches("^-?[\\,0-9]+$")) return Long.parseLong(Hello.replace(str, ",", ""));
+		if(str.matches("^-?[,0-9]+$")) return Long.parseLong(Hello.replace(str, ",", ""));
 		else return i;
 	}
 
@@ -276,7 +274,7 @@ public class Form {
 
 	public double getDouble(String name, double i) {
 		String str = get(name);
-		if(str.matches("^-?[\\.\\,0-9]+$")) return Double.parseDouble(Hello.replace(str, ",", ""));
+		if(str.matches("^-?[.,0-9]+$")) return Double.parseDouble(Hello.replace(str, ",", ""));
 		else return i;
 	}
 	
@@ -318,8 +316,8 @@ public class Form {
 				if(target.isDirectory()) {
 					target = new File(path + "/" + f.getName());
 				}
-				if(!target.getParentFile().isDirectory()) {
-					target.getParentFile().mkdirs();
+				if(!target.getParentFile().isDirectory() && !target.getParentFile().mkdirs()) {
+					Hello.errorLog("{Form.saveFile}", new Exception(target.getParentFile().getAbsolutePath() + " is not writable."));
 				}
 				f.write(target);
 				f.delete();
@@ -351,11 +349,11 @@ public class Form {
 	private HashMap<String, String> getAttributes(String str) {
 		HashMap<String, String> map = new HashMap<String, String>();
 		if(str != null && !"".equals(str)) {
-			String[] arr = str.split("\\,");
-			for(int i=0; i<arr.length; i++) {
-				String[] arr2 = null;
-				arr2 = arr[i].split("[=:]");
-				if(arr2.length == 2) {
+			String[] arr = str.split(",");
+			for (String s : arr) {
+				String[] arr2;
+				arr2 = s.split("[=:]");
+				if (arr2.length == 2) {
 					map.put(arr2[0].trim().toUpperCase(), arr2[1].replace('\'', '\0').trim());
 				}
 			}
@@ -363,7 +361,7 @@ public class Form {
 		return map;
 	}
 	
-	private boolean isValid(String[] element) throws Exception {
+	private void isValid(String[] element) throws Exception {
 		String name = element[0];
 		String value = get(name);
 		HashMap<String, String> attributes = getAttributes(element[2]);
@@ -417,9 +415,11 @@ public class Form {
 			String glue = attributes.get("GLUE");
 			String delim = attributes.containsKey("DELIM") ? attributes.get("DELIM") : "";
 			String[] arr = glue.split("\\|");
-			for(int i=0; i<arr.length; i++) {
-				if(!"".equals(get(arr[i].trim()))) value += delim + get(arr[i].trim());
+			StringBuilder sb = new StringBuilder();
+			for (String s : arr) {
+				if (!"".equals(get(s.trim()))) sb.append(delim).append(get(s.trim()));
 			}
+			value = sb.toString();
 		}
 
 		if(attributes.containsKey("TYPE") && !"".equals(value)) {
@@ -428,7 +428,7 @@ public class Form {
 			if(re != null) {
 				Pattern pattern = Pattern.compile(re);
 				Matcher match = pattern.matcher(value);
-				if(match.find() == false) {
+				if(!match.find()) {
 					throw new Exception(nicname + " is not valid");
 				}
 			}
@@ -444,7 +444,7 @@ public class Form {
 			if(re == null) re = option;
 			Pattern pattern = Pattern.compile(re);
 			Matcher match = pattern.matcher(value);
-			if(match.find() == false) {
+			if(!match.find()) {
 				throw new Exception(nicname + " is not valid");
 			}
 		}
@@ -453,7 +453,7 @@ public class Form {
 			String re = attributes.get("PATTERN");
 			Pattern pattern = Pattern.compile(re);
 			Matcher match = pattern.matcher(value);
-			if(match.find() == false) {
+			if(!match.find()) {
 				throw new Exception(nicname + " is not match to " + re);
 			}
 		}
@@ -464,7 +464,7 @@ public class Form {
 			if(filename != null && !"".equals(filename) && !"".equals(re)) {
 				Pattern pattern = Pattern.compile("(" + re.replace('\'', '|') + ")$");
 				Matcher match = pattern.matcher(getFileName(name).toLowerCase());
-				if(match.find() == false) {
+				if(!match.find()) {
 					throw new Exception(nicname + " is not allowed");
 				}
 			}
@@ -476,35 +476,34 @@ public class Form {
 			if(filename != null && !"".equals(filename) && !"".equals(re)) {
 				Pattern pattern = Pattern.compile("(" + re.replace('\'', '|') + ")$");
 				Matcher match = pattern.matcher(getFileName(name).toLowerCase());
-				if(match.find() == true) {
+				if(match.find()) {
 					throw new Exception(nicname + " is denied");
 				}
 			}
 		}
 
-		return true;
 	}
 
-	public String getScript() throws Exception {
+	public String getScript() {
 		return getScript(null);
 	}
 	
-	public String getScript(String nm) throws Exception {
+	public String getScript(String nm) {
 		if(nm != null) this.name = nm;
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("<script type='text/javascript'>\r\n");
 		sb.append("//<![CDATA[\r\n");
 		sb.append("function __setElement(el, v, a) { if(typeof(el) != 'object' && typeof(el) != 'function') return; if(v != null) switch(el.type) { case 'checkbox': case 'radio': if(el.value == v) el.checked = true; else el.checked = false; break; case 'select-one': for(var i=0; i<el.options.length; i++) if(el.options[i].value == v) el.options[i].selected = true; break; case 'select-multiple': for(var i=0; i<el.length; i++) if(el[i].value == v) el[i].checked = true; el = el[0]; break; default: el.value = v; break; } if(typeof(a) == 'object') { if(el.type != 'select-one' && el.length > 1) el = el[0]; for(i in a) el.setAttribute(i, a[i]); } }\r\n");
-		sb.append("if(_f = document.forms['" + this.name + "']) {\r\n");
+		sb.append("if(_f = document.forms['").append(this.name).append("']) {\r\n");
 
 		for(String[] element : elements) {
 		    String value = this.get(element[0], null);
 		    if(value == null && element[1] != null) {
 				value = element[1];
 			}
-		    sb.append("\t__setElement(_f['" + element[0] + "'], ");
+		    sb.append("\t__setElement(_f['").append(element[0]).append("'], ");
 	    	sb.append(value != null ? "'" + Hello.addSlashes(value) + "'" : "null");
-		    sb.append(", {" + (element[2] != null ? element[2] : "") + "});\r\n");
+		    sb.append(", {").append(element[2] != null ? element[2] : "").append("});\r\n");
 		}
 		
 		sb.append("\tif(!_f.onsubmit) _f.onsubmit = function() { return typeof obj === 'function' ? validate(this) : true; };\r\n");

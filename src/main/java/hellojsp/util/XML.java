@@ -15,7 +15,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-
 public class XML {
 
 	private String xml = null;
@@ -29,7 +28,7 @@ public class XML {
 		
 	}
 
-	public XML(String str) throws Exception {
+	public XML(String str) {
 		str = str.trim();
 		if(str.startsWith("http://") || str.startsWith("https://")) {
 			setUrl(str);
@@ -51,9 +50,9 @@ public class XML {
 
 	public void setError(String msg, Exception ex) {
 		try {
-			if(null != out && debug == true) out.write("<hr>" + msg + "###" + ex + "<hr>");
-			if(ex != null || debug == true) Hello.errorLog(msg, ex);
-		} catch(Exception e) {}
+			if(null != out && debug) out.write("<hr>" + msg + "###" + ex + "<hr>");
+			if(ex != null || debug) Hello.errorLog(msg, ex);
+		} catch(Exception ignored) {}
 	}
 	
 	public void setUrl(String url) {
@@ -84,18 +83,11 @@ public class XML {
 	}
 
 	private void parse() throws Exception {
-		InputStream is = null;
-		try {
-			is = new ByteArrayInputStream(this.xml.getBytes(this.encoding));
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			doc = dBuilder.parse(is);
-			doc.getDocumentElement().normalize();
-		} catch(Exception e) {
-			throw e;
-		} finally {
-			if(is != null) try { is.close(); } catch(Exception ex) {}
-		}
+		InputStream is = new ByteArrayInputStream(this.xml.getBytes(this.encoding));
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+		doc = dBuilder.parse(is);
+		doc.getDocumentElement().normalize();
 	}
 
 	public String getAttribute(String xstr, String attr) {
@@ -105,7 +97,7 @@ public class XML {
 			Node node = (Node)xpath.evaluate(xstr, doc, XPathConstants.NODE);
 			return node.getAttributes().getNamedItem(attr).getTextContent();
 		} catch(Exception e) {
-			setError("{XML.getAttribute} xpath:" + xstr + ", attribute:" + attr, e);			
+			setError("{XML.getAttribute} xpath:" + xstr + ", attribute:" + attr, e);
 		}
 		return "";
 	}
@@ -159,7 +151,7 @@ public class XML {
 	}
 	
 	public DataSet getDataSet(String xstr) {
-		DataSet rs = new DataSet();;
+		DataSet rs = new DataSet();
 		try {
 			if(doc == null) parse();
 			XPath xpath = XPathFactory.newInstance().newXPath();

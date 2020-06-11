@@ -47,9 +47,9 @@ public class Message {
 	
 	public void setError(String msg, Exception ex) {
 		try {
-			if(null != out && debug == true) out.write("<hr>" + msg + "###" + ex + "<hr>");
-			if(ex != null || debug == true) Hello.errorLog(msg, ex);
-		} catch(Exception e) {}
+			if(null != out && debug) out.write("<hr>" + msg + "###" + ex + "<hr>");
+			if(ex != null || debug) Hello.errorLog(msg, ex);
+		} catch(Exception ignored) {}
 	}
 	
 	protected ResourceBundle getBundle() {
@@ -85,35 +85,39 @@ public class Message {
 		public List<String> getFormats(String baseName) {
 			if (baseName == null)
 				throw new NullPointerException();
-			return Arrays.asList("xml");
+			return Collections.singletonList("xml");
 		}
 		
-		public ResourceBundle newBundle(String baseName, Locale locale, String format, ClassLoader loader, boolean reload) throws IllegalAccessException, InstantiationException, IOException {
+		public ResourceBundle newBundle(String baseName, Locale locale, String format, ClassLoader loader, boolean reload) {
 			if (baseName == null || locale == null || format == null || loader == null)
 		             throw new NullPointerException();
 			ResourceBundle bundle = null;
-	        if (format.equals("xml")) {
-	        	String bundleName = toBundleName(baseName, locale);
-	        	String resourceName = toResourceName(bundleName, format);
-	        	InputStream stream = null;
-	        	if (reload) {
-	        		URL url = loader.getResource(resourceName);
-	        		if (url != null) {
-	        			URLConnection connection = url.openConnection();
-	        			if (connection != null) {
-	        				connection.setUseCaches(false);
-	        				stream = connection.getInputStream();
-	        			}
-	        		}
-	        	} else {
-	        		stream = loader.getResourceAsStream(resourceName);
-	        	}
-	        	if (stream != null) {
-	        		BufferedInputStream bis = new BufferedInputStream(stream);
-	        		bundle = new XMLResourceBundle(bis);
-	        		bis.close();
-	        	}
-	        }
+			try {
+				if (format.equals("xml")) {
+					String bundleName = toBundleName(baseName, locale);
+					String resourceName = toResourceName(bundleName, format);
+					InputStream stream = null;
+					if (reload) {
+						URL url = loader.getResource(resourceName);
+						if (url != null) {
+							URLConnection connection = url.openConnection();
+							if (connection != null) {
+								connection.setUseCaches(false);
+								stream = connection.getInputStream();
+							}
+						}
+					} else {
+						stream = loader.getResourceAsStream(resourceName);
+					}
+					if (stream != null) {
+						BufferedInputStream bis = new BufferedInputStream(stream);
+						bundle = new XMLResourceBundle(bis);
+						bis.close();
+					}
+				}
+			} catch(Exception e) {
+				Hello.errorLog("{Message.newBundle} name:" + baseName, e);
+			}
 	        return bundle;
 		}
 		
@@ -121,7 +125,7 @@ public class Message {
 	
 	private static class XMLResourceBundle extends ResourceBundle {
   
-	    private Properties props;
+	    private final Properties props;
 
 	    XMLResourceBundle(InputStream stream) throws IOException {
 	      props = new Properties();

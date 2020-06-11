@@ -66,7 +66,7 @@ public class Hello {
 	public void setRequest(HttpServletRequest request) {
 		this.request = request;
 		this.session = request.getSession();
-		try { if(!Config.loaded) Config.init(request); } catch(Exception e) {}
+		try { if(!Config.loaded) Config.init(request); } catch(Exception ignored) {}
 	}
 	
 	public void setResponse(HttpServletResponse response) {
@@ -101,8 +101,8 @@ public class Hello {
 	public int reqInt(String name, int i) {
 		String str = request(name, "" + i);
 		try {
-			if(str.matches("^-?[\\,0-9]+$")) i = Integer.parseInt(replace(str, ",", ""));
-		} catch(Exception e) { }
+			if(str.matches("^-?[,0-9]+$")) i = Integer.parseInt(replace(str, ",", ""));
+		} catch(Exception ignored) { }
 		return i;
 	}
 
@@ -113,8 +113,8 @@ public class Hello {
 	public String reqEnum(String name, String[] arr) {
 		if(arr == null) return null;
 		String str = request(name);
-		for(int i=0; i<arr.length; i++) {
-			if(arr[i].equals(str)) return arr[i];
+		for (String s : arr) {
+			if (s.equals(str)) return s;
 		}
 		return arr[0];
 	}
@@ -122,11 +122,11 @@ public class Hello {
 	public HashMap<String, Object> reqMap(String name) {
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		try {
-			Enumeration<String> e = request.getParameterNames();
+			Enumeration e = request.getParameterNames();
 			while(e.hasMoreElements()) {
-				String key = e.nextElement();
+				String key = e.nextElement().toString();
 				if(key.matches("^(" + name + ")(.+)$")) {
-					map.put(key, request.getParameter(key));
+					map.put(key, request(key));
 				}
 			}
 		} catch(Exception ex) {
@@ -161,16 +161,12 @@ public class Hello {
 	}
 
 	public boolean isPost() {
-		if("POST".equals(request.getMethod())) {
-			return true;
-		} else {
-			return false;
-		}
+		return "POST".equals(request.getMethod());
 	}
 
 	public void jsAlert(String msg) {
 		try {
-			out.write("<script>alert('" + replace(msg, "\'", "\\\'") + "');</script>");
+			out.write("<script>alert('" + replace(msg, "'", "\\'") + "');</script>");
 		} catch(Exception e) {
 			errorLog("{Hello.jsAlert} msg:" + msg, e);
 		}
@@ -227,31 +223,36 @@ public class Hello {
 		}
 	}
 
-	public String getCookie(String s) throws Exception {
+	public String getCookie(String s) {
 		Cookie[] cookie = request.getCookies();
 		if(cookie == null) return "";
-		for(int i = 0; i < cookie.length; i++) {
-			if(s.equals(cookie[i].getName())) {
-				String value = URLDecoder.decode(cookie[i].getValue(), encoding);
-				return value;
+		try {
+			for (Cookie item : cookie) {
+				if (s.equals(item.getName())) {
+					return URLDecoder.decode(item.getValue(), encoding);
+				}
 			}
-		}
+		} catch(Exception ignored) {}
 		return "";
 	}
 
-	public void setCookie(String name, String value) throws Exception {
-		Cookie cookie = new Cookie(name, URLEncoder.encode(value, encoding));
-		if(cookieDomain != null) cookie.setDomain(cookieDomain);
-		cookie.setPath("/");
-		response.addCookie(cookie);
+	public void setCookie(String name, String value) {
+		try {
+			Cookie cookie = new Cookie(name, URLEncoder.encode(value, encoding));
+			if (cookieDomain != null) cookie.setDomain(cookieDomain);
+			cookie.setPath("/");
+			response.addCookie(cookie);
+		} catch (Exception ignored) {}
 	}
 
-	public void setCookie(String name, String value, int time) throws Exception {
-		Cookie cookie = new Cookie(name, URLEncoder.encode(value, encoding));
-		if(cookieDomain != null) cookie.setDomain(cookieDomain);
-		cookie.setPath("/");
-		cookie.setMaxAge(time);
-		response.addCookie(cookie);
+	public void setCookie(String name, String value, int time) {
+		try {
+			Cookie cookie = new Cookie(name, URLEncoder.encode(value, encoding));
+			if (cookieDomain != null) cookie.setDomain(cookieDomain);
+			cookie.setPath("/");
+			cookie.setMaxAge(time);
+			response.addCookie(cookie);
+		} catch(Exception ignored) {}
 	}
 
 	public void delCookie(String name) {
@@ -283,7 +284,7 @@ public class Hello {
 
 	public static String time(String sformat, Date date) {
 		SimpleDateFormat sdf = new SimpleDateFormat(sformat);
-		if(sdf == null || date == null) return "";
+		if(date == null) return "";
 		return sdf.format(date);
 	}
 
@@ -291,14 +292,14 @@ public class Hello {
 		if("".equals(date)) return "";
 		Date d = strToDate(date.trim());
 		SimpleDateFormat sdf = new SimpleDateFormat(sformat);
-		if(sdf == null || d == null) return "";
+		if(d == null) return "";
 		return sdf.format(d);
 	}
 
     public static String time(String sformat, Date date, String timezone) {
         SimpleDateFormat sdf = new SimpleDateFormat(sformat);
 		sdf.setTimeZone(TimeZone.getTimeZone(timezone));
-        if(sdf == null || date == null) return "";
+        if(date == null) return "";
         return sdf.format(date);
     }
 
@@ -307,20 +308,20 @@ public class Hello {
         Date d = strToDate(date.trim());
         SimpleDateFormat sdf = new SimpleDateFormat(sformat);
 		sdf.setTimeZone(TimeZone.getTimeZone(timezone));
-        if(sdf == null || d == null) return "";
+        if(d == null) return "";
         return sdf.format(d);
     }
     
     public static String time(String sformat, Date date, Locale locale) {
         SimpleDateFormat sdf = new SimpleDateFormat(sformat, locale);
-        if(sdf == null || date == null) return "";
+        if(date == null) return "";
         return sdf.format(date);
     }
     
     public static String time(String sformat, String date, Locale locale) {
         Date d = strToDate(date.trim());
         SimpleDateFormat sdf = new SimpleDateFormat(sformat, locale);
-        if(sdf == null || d == null) return "";
+        if(d == null) return "";
         return sdf.format(d);
     }
 
@@ -446,13 +447,13 @@ public class Hello {
 
 	public static String encrypt(String str, String algorithm) { return encrypt(str, algorithm, encoding); }
 	public static String encrypt(String str, String algorithm, String charset) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
         try {
 			MessageDigest di = MessageDigest.getInstance(algorithm.toUpperCase());
-			di.update(new String(str).getBytes(charset));
+			di.update(str.getBytes(charset));
 			byte[] md5Code = di.digest();
-			for (int i=0;i<md5Code.length;i++) {
-				String md5Char = String.format("%02x", 0xff&(char)md5Code[i]);
+			for (byte b : md5Code) {
+				String md5Char = String.format("%02x", 0xff & (char) b);
 				sb.append(md5Char);
 			}
 		} catch (Exception e) {
@@ -468,16 +469,16 @@ public class Hello {
 	}
 
 	public String getQueryString(String exception) {
-		String query = "";
+		StringBuilder query = new StringBuilder();
 		if(null != request.getQueryString()) {
-			String[] exceptions = exception.replaceAll(" +", "").split("\\,");
-			String[] queries = request.getQueryString().split("\\&");
+			String[] exceptions = exception.replaceAll(" +", "").split(",");
+			String[] queries = request.getQueryString().split("&");
 
-			for(int i=0; i<queries.length; i++) {
-				String que = replace(queries[i], new String[] { "<", ">", "'", "\"" }, new String[] { "&lt;", "&gt;", "&#39;", "&quot;" });
-				String[] attributes = que.split("\\=");
-				if(attributes.length > 0 && inArray(attributes[0], exceptions)) continue;
-				query += "&" + que;
+			for (String s : queries) {
+				String que = replace(s, new String[]{"<", ">", "'", "\""}, new String[]{"&lt;", "&gt;", "&#39;", "&quot;"});
+				String[] attributes = que.split("=");
+				if (attributes.length > 0 && inArray(attributes[0], exceptions)) continue;
+				query.append("&").append(que);
 			}
 		}
 		return query.length() > 0 ? query.substring(1) : "";
@@ -501,18 +502,21 @@ public class Hello {
 		return query == null ? url : (url + "?" + query);
 	}
 
-	public void log(String msg) throws Exception {
+	public void log(String msg) {
 		log("debug", msg, "yyyyMMdd");
 	}
-	public void log(String prefix, String msg) throws Exception {
+	public void log(String prefix, String msg) {
 		log(prefix, msg, "yyyyMMdd");
 	}
-	public void log(String prefix, String msg, String fmt) throws Exception {
+	public void log(String prefix, String msg, String fmt) {
     	String logDir = Config.getLogDir();
         try {
             if(logDir == null) logDir = "/tmp";
 			File log = new File(logDir);
-			if(!log.exists()) log.mkdirs();
+			if(!log.exists() && !log.mkdirs()) {
+				errorLog("{Hello.log}", new Exception(logDir + " is not writable."));
+				return;
+			}
 			FileWriter logger = new FileWriter(logDir + "/" + prefix + "_" + time(fmt) + ".log", true);
 			logger.write("["+time("yyyy-MM-dd HH:mm:ss")+"] "+request.getRemoteAddr()+" : "+getThisURI()+"\n"+msg+"\n");
 			logger.close();
@@ -530,14 +534,20 @@ public class Hello {
         try {
             if(logDir == null) logDir = "/tmp";
 			File log = new File(logDir);
-			if(!log.exists()) log.mkdirs();
+			if(!log.exists() && !log.mkdirs()) {
+				errorLog("{Hello.errorLog}", new Exception(logDir + " is not writable."));
+				return;
+			}
             if(ex != null) {
                 StackTraceElement[] arr = ex.getStackTrace();
-                for(int i=0; i<arr.length; i++) {
-                    if(arr[i].getClassName().indexOf("_jsp") != -1)
-                        msg = "at " + replace(replace(replace(arr[i].getClassName(), "__jsp", ".jsp"), "_jsp", ""), "._", "/")
-                        + "\n" +  msg + " (" + ex.getMessage() + ")";
-                }
+                StringBuilder sb = new StringBuilder();
+				for (StackTraceElement stackTraceElement : arr) {
+					if (stackTraceElement.getClassName().contains("_jsp"))
+						sb.append("at ")
+						.append(replace(replace(replace(stackTraceElement.getClassName(), "__jsp", ".jsp"), "_jsp", ""), "._", "/"))
+						.append("\n").append(msg).append(" (").append(ex.getMessage()).append(")");
+				}
+				msg = sb.toString();
 				ex.printStackTrace(System.out);
             }
             FileWriter logger = new FileWriter(logDir + "/error_" + time("yyyyMMdd") + ".log", true);
@@ -563,7 +573,7 @@ public class Hello {
 	}
 
 	public static String repeatString(String src, int repeat) {
-		StringBuffer buf=new StringBuffer();
+		StringBuilder buf=new StringBuilder();
 		for (int i=0; i<repeat; i++) {
 			buf.append(src);
 		}
@@ -571,15 +581,15 @@ public class Hello {
 	}
 
 	public static boolean inArray(String str, String[] array) {
-		for(int i=0; i<array.length; i++) {
-			if(array[i].equals(str)) return true;
+		for (String s : array) {
+			if (s.equals(str)) return true;
 		}
 		return false;
 	}
 
 	public static String join(String str, Object[] array) {
 		if(str != null && array != null) {
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			for(int i=0; i<array.length; i++) {
 				sb.append(array[i].toString());
 				if(i < (array.length - 1)) sb.append(str);
@@ -590,7 +600,7 @@ public class Hello {
 	}
 	
 	public static String join(String str, HashMap<String, Object> map) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		int size = map.size(), i = 0;
 		for(String key : map.keySet()) {
 			String value = map.get(key) != null ? map.get(key).toString() : "";
@@ -609,8 +619,8 @@ public class Hello {
 	public static DataSet arr2loop(String[] arr, boolean empty) {
 		DataSet result = new DataSet();
 		if(null != arr) {
-			for(int i=0; i<arr.length; i++) {
-				String[] tmp = arr[i].split("=>");
+			for (String s : arr) {
+				String[] tmp = s.split("=>");
 				String key = tmp[0].trim();
 				String value = (tmp.length > 1 ? tmp[1] : (empty ? "" : tmp[0])).trim();
 				result.addRow();
@@ -636,11 +646,11 @@ public class Hello {
 
 	public static String getItem(String item, String[] arr) {
 		if(null != arr) {
-			for(int i=0; i<arr.length; i++) {
-				String[] tmp = arr[i].split("=>");
+			for (String s : arr) {
+				String[] tmp = s.split("=>");
 				String id = tmp[0].trim();
 				String value = (tmp.length > 1 ? tmp[1] : tmp[0]).trim();
-				if(id.equals(item)) return value;
+				if (id.equals(item)) return value;
 			}
 		}
 		return "";
@@ -655,7 +665,7 @@ public class Hello {
 	}
 
 	public static String[] getKeys(Map<String, ?> map) {
-		return map.keySet().toArray(new String[map.size()]);
+		return map.keySet().toArray(new String[0]);
 	}
 
 	public static String[] getKeys(String[] arr) {
@@ -677,8 +687,8 @@ public class Hello {
 				, "BlackBerry", "Android", "Windows CE"
 				, "LG", "MOT", "SAMSUNG", "SonyEricsson"
 			};
-			for(int i=0; i<mobileKeyWords.length; i++) {
-				if(agent.indexOf(mobileKeyWords[i]) != -1) {
+			for (String mobileKeyWord : mobileKeyWords) {
+				if (agent.contains(mobileKeyWord)) {
 					isMobile = true;
 					break;
 				}
@@ -690,156 +700,154 @@ public class Hello {
 	public static String getMimeType(String filename) {
 		String ext = getFileExt(filename).toUpperCase();
 		String mime = "application/octet-stream;";
-		if(ext.equals("PDF")) {
-			mime = "application/pdf";
-		} else if(ext.equals("PPT") || ext.equals("PPTX")) {
-			mime = "application/vnd.ms-powerpoint";
-		} else if(ext.equals("DOC") || ext.equals("DOCX")) {
-			mime = "application/msword";
-		} else if(ext.equals("XLS") || ext.equals("XLSX")) {
-			mime = "application/vnd.ms-excel";
-		} else if(ext.equals("HWP")) {
-			mime = "application/x-hwp";
-		} else if(ext.equals("PNG")) {
-			mime = "image/png";
-		} else if(ext.equals("GIF")) {
-			mime = "image/gif";
-		} else if(ext.equals("JPG") || ext.equals("JPEG")) {
-			mime = "image/jpeg";
-		} else if(ext.equals("MP3")) {
-			mime = "audio/mpeg";
-		} else if(ext.equals("MP4")) {
-			mime = "video/mp4";
-		} else if(ext.equals("ZIP")) {
-			mime = "application/zip";
-		} else if(ext.equals("TXT")) {
-			mime = "text/plain";
-		} else if(ext.equals("AVI")) {
-			mime = "video/x-msvideo";
-		}
+		if(ext.equals("PDF")) mime = "application/pdf";
+		else if(ext.equals("PPT") || ext.equals("PPTX")) mime = "application/vnd.ms-powerpoint";
+		else if(ext.equals("DOC") || ext.equals("DOCX")) mime = "application/msword";
+		else if(ext.equals("XLS") || ext.equals("XLSX")) mime = "application/vnd.ms-excel";
+		else if(ext.equals("HWP")) mime = "application/x-hwp";
+		else if(ext.equals("PNG")) mime = "image/png";
+		else if(ext.equals("GIF")) mime = "image/gif";
+		else if(ext.equals("JPG") || ext.equals("JPEG")) mime = "image/jpeg";
+		else if(ext.equals("MP3")) mime = "audio/mpeg";
+		else if(ext.equals("MP4")) mime = "video/mp4";
+		else if(ext.equals("ZIP")) mime = "application/zip";
+		else if(ext.equals("TXT")) mime = "text/plain";
+		else if(ext.equals("AVI")) mime = "video/x-msvideo";
 		return mime;
 	}
 
-	public void download(String path, String filename) throws Exception {
-		download(path, filename, 0);
-	}
-
-	public void download(String path, String filename, int bandwidth) throws Exception {
-
-		File f = new File(path);
-		if(f.exists()){
-
-			try {
-				String agent = request.getHeader("user-agent");
-
-				if(agent.indexOf("MSIE") != -1) {
-					filename = URLEncoder.encode(filename, "UTF-8").replaceAll("\\+", "%20");
-				} else if(agent.indexOf("Firefox") != -1 || agent.indexOf("Safari") != -1) {
-					filename = new String(filename.getBytes("UTF-8"), "8859_1");
-				} else if(agent.indexOf("Chrome") != -1 || agent.indexOf("Opera") != -1) {
-					StringBuffer sb = new StringBuffer();
-					for (int i=0; i<filename.length(); i++) {
-						char c = filename.charAt(i);
-						if (c > '~') {
-							sb.append(URLEncoder.encode("" + c, "UTF-8"));
-						} else {
-							sb.append(c);
-						}
-					}
-					filename = sb.toString();
-				} else {
-					filename = URLEncoder.encode(filename, "UTF-8").replaceAll("\\+", "%20");
-				}
-
-				if(isMobile()) {
-					response.setContentType( getMimeType(filename) );
-				} else {
-					response.setContentType( "application/octet-stream;" );
-				}
-				response.setContentLength( (int)f.length() );
-				response.setHeader( "Content-Disposition", "attachment; filename=\"" + filename + "\"" );
-
-				byte[] bbuf = new byte[2048];
-
-				BufferedInputStream fin = new BufferedInputStream(new FileInputStream(f));
-				BufferedOutputStream outs = new BufferedOutputStream(response.getOutputStream());
-
-				int read = 0;
-				int i = 1;
-				bandwidth = bandwidth / 20;
-				while ((read = fin.read(bbuf)) != -1) {
-					outs.write(bbuf, 0, read);
-					if(bandwidth > 0 && i % bandwidth == 0) Thread.sleep(100);
-					i++;
-				}
-
-				outs.close();
-				fin.close();
-
-			} catch(Exception e) {
-				errorLog("{Hello.download} path:" + path + ", filename:" + filename, e);
-				response.setContentType("text/html");
-				out.write("File Download Error : " + e.getMessage());
-			}
-		} else {
-			response.setContentType("text/html");
-			out.write("File Not Found : " + path);
-		}
-
-	}
-
-	public static String readFile(String path) throws Exception {
-		return readFile(path, encoding);
-	}
-
-	public static String readFile(String path, String encoding) throws Exception {
+	public void download(String path, String filename) { download(path, filename, 0); }
+	public void download(String path, String filename, int bandwidth) {
 		File f = new File(path);
 		if(f.exists()) {
-
-			FileInputStream fin = new FileInputStream(f);
-			Reader reader = new InputStreamReader(fin, encoding);
-			BufferedReader br = new BufferedReader(reader);
-
-			StringBuffer sb = new StringBuffer();
-			int c = 0;
-			while((c = br.read()) != -1) {
-				sb.append((char)c);
-			}
-			br.close();
-			reader.close();
-			fin.close();
-
-			return sb.toString();
+			download(f, filename, bandwidth);
 		} else {
-			return "";
+			errorLog("{Hello.download} filename:" + filename, new Exception(path + " is not exists"));
 		}
 	}
 
-	public static void writeFile(String path, String str) throws Exception {
+	public void download(File f, String filename) { download(f, filename, 0); }
+	public void download(File f, String filename, int bandwidth) {
+		FileInputStream fis = null;
+		BufferedInputStream fin = null;
+		BufferedOutputStream outs = null;
+		try {
+			String agent = request.getHeader("user-agent");
+
+			if(agent.contains("MSIE")) {
+				filename = URLEncoder.encode(filename, "UTF-8").replaceAll("\\+", "%20");
+			} else if(agent.contains("Firefox") || agent.contains("Safari")) {
+				filename = new String(filename.getBytes("UTF-8"), "8859_1");
+			} else if(agent.contains("Chrome") || agent.contains("Opera")) {
+				StringBuilder sb = new StringBuilder();
+				for (int i=0; i<filename.length(); i++) {
+					char c = filename.charAt(i);
+					if (c > '~') {
+						sb.append(URLEncoder.encode("" + c, "UTF-8"));
+					} else {
+						sb.append(c);
+					}
+				}
+				filename = sb.toString();
+			} else {
+				filename = URLEncoder.encode(filename, "UTF-8").replaceAll("\\+", "%20");
+			}
+
+			if(isMobile()) {
+				response.setContentType( getMimeType(filename) );
+			} else {
+				response.setContentType( "application/octet-stream;" );
+			}
+			response.setContentLength( (int)f.length() );
+			response.setHeader( "Content-Disposition", "attachment; filename=\"" + filename + "\"" );
+
+			byte[] bbuf = new byte[2048];
+
+			fis = new FileInputStream(f);
+			fin = new BufferedInputStream(fis);
+			outs = new BufferedOutputStream(response.getOutputStream());
+
+			int read;
+			int i = 1;
+			bandwidth = bandwidth / 20;
+			while ((read = fin.read(bbuf)) != -1) {
+				outs.write(bbuf, 0, read);
+				if(bandwidth > 0 && i % bandwidth == 0) Thread.sleep(100);
+				i++;
+			}
+		} catch(Exception e) {
+			errorLog("{Hello.download} path:" + f.getAbsolutePath() + ", filename:" + filename, e);
+		} finally {
+			if(outs != null) try { outs.close(); } catch (Exception ignored) {}
+			if(fin != null) try { fin.close(); } catch (Exception ignored) {}
+			if(fis != null) try { fis.close(); } catch (Exception ignored) {}
+		}
+	}
+
+	public static String readFile(String path) { return readFile(path, encoding); }
+	public static String readFile(String path, String encoding) {
+		File f = new File(path);
+		if(f.exists()) return readFile(f, encoding);
+		else return "";
+	}
+
+	public static String readFile(File f) { return readFile(f, encoding); }
+	public static String readFile(File f, String encoding) {
+		StringBuilder sb = new StringBuilder();
+		FileInputStream fin = null;
+		Reader reader = null;
+		BufferedReader br = null;
+		try {
+			fin = new FileInputStream(f);
+			reader = new InputStreamReader(fin, encoding);
+			br = new BufferedReader(reader);
+			int c;
+			while ((c = br.read()) != -1) {
+				sb.append((char) c);
+			}
+		} catch (Exception e) {
+			errorLog("{Hello.readFile} path:" + f.getAbsolutePath() + ", encoding:" + encoding, e);
+		} finally {
+			if(br != null) try { br.close(); } catch (Exception ignored) {}
+			if(reader != null) try { reader.close(); } catch (Exception ignored) {}
+			if(fin != null) try { fin.close(); } catch (Exception ignored) {}
+		}
+		return sb.toString();
+	}
+
+	public static void writeFile(String path, String str) {
 		writeFile(path, str, encoding);
 	}
 	
-	public static void writeFile(String path, String str, String encoding) throws Exception {
-		Writer out = new BufferedWriter(new OutputStreamWriter(
-    		new FileOutputStream(path), encoding));
-    	try {
-        	out.write(str);
-        } finally {
-            out.close();
-        }
+	public static void writeFile(String path, String str, String encoding) {
+		FileOutputStream fos = null;
+		OutputStreamWriter osw = null;
+		BufferedWriter out = null;
+		try {
+			fos = new FileOutputStream(path);
+			osw = new OutputStreamWriter(fos, encoding);
+			out = new BufferedWriter(osw);
+			out.write(str);
+		} catch (Exception e) {
+			errorLog("{Hello.writeFile} path:" + path + ", encoding:" + encoding, e);
+		} finally {
+			if(out != null) try { out.close(); } catch (Exception ignored) {}
+			if(osw != null) try { osw.close(); } catch (Exception ignored) {}
+			if(fos != null) try { fos.close(); } catch (Exception ignored) {}
+		}
 	}
 
 	public static String exec(String cmd) {
-		StringBuffer output = new StringBuffer();
+		StringBuilder output = new StringBuilder();
 		Process p;
 		try {
 			p = Runtime.getRuntime().exec(cmd);
 			p.waitFor();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
-			String line = "";			
+			String line;
 			while ((line = reader.readLine())!= null) {
-				output.append(line + "\n");
+				output.append(line).append("\n");
 			}
 		} catch (Exception e) {
 			errorLog("{Hello.exec} cmd:" + cmd, e);
@@ -847,29 +855,39 @@ public class Hello {
 		return output.toString();
 	}	
 	
-	public static void chmod(String mode, String path) throws Exception {
-		Runtime.getRuntime().exec("chmod " + mode + " " + path);
+	public static void chmod(String mode, String path) {
+		try {
+			Runtime.getRuntime().exec("chmod " + mode + " " + path);
+		} catch (Exception ignored) {}
 	}
 
-	public static void copyFile(String source, String target) throws Exception {
+	public static void copyFile(String source, String target) {
 		copyFile(new File(source), new File(target));
 	}
 
-	public static void copyFile(File source, File target) throws Exception {
+	public static void copyFile(File source, File target) {
 		if(source.isDirectory()) {
-			if(!target.isDirectory()){
-				target.mkdirs();
+			if(!target.isDirectory() && !target.mkdirs()) {
+				errorLog("{Hello.copyFile}", new Exception(target.getAbsolutePath() + " is not writable."));
+				return;
 			}
 			String[] children  = source.list();
-			for(int i=0; i<children.length; i++){
-				copyFile(new File(source, children[i]),new File(target, children[i]));
+			if(children != null) {
+				for (String child : children) {
+					copyFile(new File(source, child), new File(target, child));
+				}
 			}
 		} else {
-			FileInputStream fis = new FileInputStream(source);
-			FileOutputStream fos = new FileOutputStream(target);
-			FileChannel inChannel = fis.getChannel();
-			FileChannel outChannel = fos.getChannel();
+			FileInputStream fis = null;
+			FileOutputStream fos = null;
+			FileChannel inChannel = null;
+			FileChannel outChannel = null;
 			try {
+                fis = new FileInputStream(source);
+                fos = new FileOutputStream(target);
+                inChannel = fis.getChannel();
+                outChannel = fos.getChannel();
+
 				// magic number for Windows, 64Mb - 32Kb
 				int maxCount = (64 * 1024 * 1024) - (32 * 1024);
 				long size = inChannel.size(), position = 0;
@@ -878,33 +896,36 @@ public class Hello {
 				}
 			} catch (IOException e) {
 				errorLog("{Hello.copyFile} source:" + source.getAbsolutePath() + ", target:" + target.getAbsolutePath(), e);
-				throw e;
 			} finally {
-				if(inChannel != null) inChannel.close();
-				if(outChannel != null) outChannel.close();
-				if(fis != null) fis.close();
-				if(fos != null) fos.close();
+				if(inChannel != null) try { inChannel.close(); } catch (Exception ignored) {}
+                if(outChannel != null) try { outChannel.close(); } catch (Exception ignored) {}
+                if(fis != null) try { fis.close(); } catch (Exception ignored) {}
+                if(fos != null) try { fos.close(); } catch (Exception ignored) {}
 			}
 		}
 	}
 
-	public static void delFile(String path) throws Exception {
+	public static void delFile(String path) {
 		delFile(path, false);
 	}
-	
-	public static void delFile(String path, boolean recursive) throws Exception {
+
+	public static void delFile(String path, boolean recursive) {
 		File f = new File(path);
 		path = replace(path, "..", "");
 		if(f.exists()) {
 			if(f.isDirectory()) {
 				File[] files = f.listFiles();
-				if(recursive == false && files.length > 0) {
-					errorLog(path + " is not empty");
-					return;
+				if(files != null) {
+					if (!recursive && files.length > 0) {
+						errorLog(path + " is not empty");
+						return;
+					}
+					for (File file : files) delFile(path + "/" + file.getName(), true);
 				}
-				for(int i=0; i<files.length; i++) delFile(path + "/" + files[i].getName(), recursive);
-			} 
-			f.delete();
+			}
+			if(!f.delete()) {
+				errorLog("{Hello.delFile}", new Exception(path + " is not deleted."));
+			}
 		} else {
 			errorLog(path + " is not found", new Exception("file not found"));
 		}
@@ -926,22 +947,24 @@ public class Hello {
 		return (int)(d.getTime() / 1000);
 	}
 
-	public static String urlencode(String url) throws Exception {
-		return URLEncoder.encode(url, encoding);
+	public static String urlencode(String url) {
+		try { return URLEncoder.encode(url, encoding); }
+		catch (Exception ignored) { return ""; }
 	}
 
-	public static String urldecode(String url) throws Exception {
-		return URLDecoder.decode(url, encoding);
+	public static String urldecode(String url) {
+		try { return URLDecoder.decode(url, encoding); }
+		catch (Exception ignored) { return ""; }
 	}
 
-	public static String encode(String str) throws Exception {
+	public static String encode(String str) {
 		try { return Base64Coder.encodeString(str); }
-		catch(Exception e) { return ""; }
+		catch(Exception ignored) { return ""; }
 	}
 	
-	public static String decode(String str) throws Exception {
+	public static String decode(String str) {
 		try { return Base64Coder.decodeString(str); }
-		catch(Exception e) { return ""; }
+		catch(Exception ignored) { return ""; }
 	}
 
 	public static boolean serialize(String path, Object obj) {
@@ -953,8 +976,8 @@ public class Hello {
 		ObjectOutput s = null;
 		boolean flag = true;
 		try {
-		    if(!file.getParentFile().isDirectory()) {
-		    	file.getParentFile().mkdirs();
+		    if(!file.getParentFile().isDirectory() && !file.getParentFile().mkdirs()) {
+				errorLog("{Hello.serialize}", new Exception(file.getParentFile().getAbsolutePath() + " is not writable."));
 		    }
 			f = new FileOutputStream(file);
 			s = new ObjectOutputStream(f);
@@ -964,8 +987,8 @@ public class Hello {
 			errorLog("{Hello.serialize} path:" + file.getAbsolutePath(), e);
 			flag = false;
 		} finally {
-			if( s != null ) try { s.close(); } catch(Exception e) { }
-			if( f != null ) try { f.close(); } catch(Exception e) { }
+			if(s != null) try { s.close(); } catch(Exception ignored) {}
+			if(f != null) try { f.close(); } catch(Exception ignored) {}
 		}
 		return flag;
 	}
@@ -985,8 +1008,8 @@ public class Hello {
 		} catch(Exception e) {
 			errorLog("{Hello.unserialize} path:" + file.getAbsolutePath(), e);
 		} finally {
-			if( ois != null ) try { ois.close(); } catch(Exception e) { }
-			if( fis != null ) try { fis.close(); } catch(Exception e) { }
+			if( ois != null ) try { ois.close(); } catch(Exception ignored) { }
+			if( fis != null ) try { fis.close(); } catch(Exception ignored) { }
 		}
 		return obj;
 	}
@@ -1005,38 +1028,36 @@ public class Hello {
 	
     public static String stripTags(String str) {
         int offset = 0;
-        int i = 0;
-        int j = 0;
-        StringBuffer buf = new StringBuffer();
-        synchronized(buf) {
-            while((i = str.indexOf("<", offset)) != -1) {
-                if((j = str.indexOf(">", offset)) != -1) {
-                    buf.append(str.substring(offset, i));
-                    offset = j + 1;
-                } else {
-                    break;
-                }
-            }
-            buf.append(str.substring(offset));
-            return replace(replace(replace(buf.toString(), "\t", ""), "\r", ""), "\n", "").trim();
-        }
+        int i;
+        int j;
+        StringBuilder buf = new StringBuilder();
+		while((i = str.indexOf("<", offset)) != -1) {
+			if((j = str.indexOf(">", offset)) != -1) {
+				buf.append(str, offset, i);
+				offset = j + 1;
+			} else {
+				break;
+			}
+		}
+		buf.append(str.substring(offset));
+		return replace(replace(replace(buf.toString(), "\t", ""), "\r", ""), "\n", "").trim();
     }
 
 	public static String strpad(String input, int size, String pad) {
 		int gap = size - input.getBytes().length;
 		if(gap <= 0) return input;
-		String output = input;
+		StringBuilder output = new StringBuilder(input);
 		for(int i=0; i<gap; i++) {
-			output += pad;
+			output.append(pad);
 		}
-		return output;
+		return output.toString();
 	}
 	public static String strrpad(String input, int size, String pad) {
 		int gap = size - input.getBytes().length;
 		if(gap <= 0) return input;
-		String output = "";
+		StringBuilder output = new StringBuilder();
 		for(int i=0; i<gap; i++) {
-			output += pad;
+			output.append(pad);
 		}
 		return output + input;
 	}
@@ -1075,49 +1096,53 @@ public class Hello {
 	public static String nf(int n) { return numberFormat(n); }
 	public static String nf(double n, int i) { return numberFormat(n, i); }
 
-	public void p(Object obj) throws Exception {
-		out.write("<div style='border:3px solid lightgreen;margin-bottom:5px;padding:10px;font-size:12px;'>");
-		if(obj != null) {
-			if(obj instanceof DataSet) {
-				out.write(replace(obj.toString(), new String[] {"[", "{", ",","}","]","="}, new String[] {"[<BLOCKQUOTE>", "{<BLOCKQUOTE>", ",<BR>","</BLOCKQUOTE>}","</BLOCKQUOTE>]"," => "}));
-			} else  {
-				out.write(obj.toString());
-			}
-		} else {
-			out.write("NULL");
-		}
-		out.write("</div>");
+	public void p(Object obj) {
+	    try {
+            out.write("<pre style='border:1px solid #ccc;margin:10px;padding:10px;font-size:12px;background-color:#f5f5f5'>");
+            if (obj != null) {
+                if (obj instanceof DataSet) {
+                    out.write(replace(obj.toString(), "},", "},\n"));
+                } else {
+                    out.write(obj.toString());
+                }
+            } else {
+                out.write("NULL");
+            }
+            out.write("</pre>");
+        } catch(Exception ignored) {}
 	}
 
-	public void p(Object[] obj) throws Exception {
-		out.write("<div style='border:3px solid lightgreen;margin-bottom:5px;padding:10px;font-size:12px;'>");
-		if(obj != null) {
-			for(int i=0; i<obj.length; i++) {
-				if(i > 0) out.write(", ");
-				out.write(obj[i].toString());
-			}
-		} else {
-			out.write("NULL");
-		}
-		out.write("</div>");
+	public void p(Object[] obj) {
+	    try {
+			out.write("<pre style='border:1px solid #ccc;margin:10px;padding:10px;font-size:12px;background-color:#f5f5f5'>");
+            if (obj != null) {
+                for (int i = 0; i < obj.length; i++) {
+                    if (i > 0) out.write(", ");
+                    out.write(obj[i].toString());
+                }
+            } else {
+                out.write("NULL");
+            }
+            out.write("</pre>");
+        } catch(Exception ignored) {}
 	}
 
-	public void p(int i) throws Exception {
+	public void p(int i) {
 		p("" + i);
 	}
 
-	public void p() throws Exception {
-		out.write("<div style='border:3px solid lightgreen;margin-bottom:5px;padding:10px;font-size:12px;'>");
-		out.write("<pre style='text-align:left;font-size:9pt;'>");
-		Enumeration<?> e = request.getParameterNames();
-		while(e.hasMoreElements()) {
-			String key = (String)e.nextElement();
-			for(int i=0; i<request.getParameterValues(key).length; i++) {
-				out.write("[" + key + "] => " + request.getParameterValues(key)[i] + "\r");
-			}
-		}
-		out.write("</pre>");
-		out.write("</div>");
+	public void p() {
+	    try {
+			out.write("<pre style='border:1px solid #ccc;margin:10px;padding:10px;font-size:12px;background-color:#f5f5f5'>");
+            Enumeration<?> e = request.getParameterNames();
+            while (e.hasMoreElements()) {
+                String key = (String) e.nextElement();
+                for (int i = 0; i < request.getParameterValues(key).length; i++) {
+                    out.write("[" + key + "] => " + request.getParameterValues(key)[i] + "\r");
+                }
+            }
+            out.write("</pre>");
+        } catch (Exception ignored) {}
 	}
 
 	public static String dirname(String path) {
@@ -1152,11 +1177,11 @@ public class Hello {
 				offset = pos + len;
 			}
 		}
-		return list.toArray(new String[list.size()]);
+		return list.toArray(new String[0]);
 	}
 
 	public static String addSlashes(String str) {
-		return replace(replace(replace(replace(replace(str, "\\", "\\\\"), "\"", "\\\""), "\'", "\\\'"), "\r\n", "\\r\\n"), "\n", "\\n");
+		return replace(replace(replace(replace(replace(str, "\\", "\\\\"), "\"", "\\\""), "'", "\\'"), "\r\n", "\\r\\n"), "\n", "\\n");
 	}
 
 	public static String replace(String s, String sub, String with) {
@@ -1164,14 +1189,14 @@ public class Hello {
 		int i = s.indexOf(sub,c);
 		if (i == -1) return s;
 
-		StringBuffer buf = new StringBuffer(s.length() + with.length());
+		StringBuilder buf = new StringBuilder(s.length() + with.length());
 		do {
-			buf.append(s.substring(c, i));
+			buf.append(s, c, i);
 			buf.append(with);
 			c = i + sub.length();
 		} while((i = s.indexOf(sub, c)) != -1);
 		if(c < s.length()) {
-			buf.append(s.substring(c, s.length()));
+			buf.append(s.substring(c));
 		}
 		return buf.toString();
 	}
@@ -1185,17 +1210,17 @@ public class Hello {
 	}
 	
 	public static String replace(String s, String[] sub, String with) {
-		for(int i=0; i<sub.length; i++) {
-			s = replace(s, sub[i], with);
+		for (String value : sub) {
+			s = replace(s, value, with);
 		}
 		return s;
 	}
 
-	public static String cutString(String str, int len) throws Exception {
+	public static String cutString(String str, int len) {
 		return cutString(str, len, "...");
 	}
 
-	public static String cutString(String str, int len, String tail) throws Exception {
+	public static String cutString(String str, int len, String tail) {
 		try  {
 			byte[] by = str.getBytes("utf-8");
 			if(by.length <= len) return str;
@@ -1204,7 +1229,7 @@ public class Hello {
 				if((by[i] & 0x80) == 0x80) count++;
 			}
 			if((by[len - 1] & 0x80) == 0x80 && (count % 2) == 1) len--;
-			len = len - (int)(count / 2);
+			len = len - count / 2;
 			return str.substring(0, len) + tail;
 		} catch(Exception e) {
 			errorLog("{Hello.cutString} str:" + str + ", length:" + len, e);
@@ -1217,11 +1242,15 @@ public class Hello {
 		return s1.equals(s2);
 	}
 
-	public static long crc32(String str) throws Exception {
-		byte bytes[] = str.getBytes(encoding);
-		Checksum checksum = new CRC32();
-		checksum.update(bytes,0,bytes.length);
-		return checksum.getValue();
+	public static long crc32(String str)  {
+	    try {
+            byte[] bytes = str.getBytes(encoding);
+            Checksum checksum = new CRC32();
+            checksum.update(bytes, 0, bytes.length);
+            return checksum.getValue();
+        } catch(Exception ignored) {
+	        return 0L;
+        }
 	}
 
 	public String getWebUrl() {
@@ -1236,10 +1265,14 @@ public class Hello {
 		return url;
 	}
 	
-	public String includePage(String url) throws Exception {
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+	public String includePage(String url) {
+		ByteArrayOutputStream buffer = null;
+		OutputStreamWriter osw = null;
+		String ret = "";
 		try {
-			final PrintWriter writer = new PrintWriter(new OutputStreamWriter(buffer));
+			buffer = new ByteArrayOutputStream();
+			osw = new OutputStreamWriter(buffer);
+			final PrintWriter writer = new PrintWriter(osw);
 			final HttpServletResponse wrappedResponse = new HttpServletResponseWrapper(response) {
 				public PrintWriter getWriter() {
 					return writer;
@@ -1248,10 +1281,15 @@ public class Hello {
 			RequestDispatcher dispatcher = request.getRequestDispatcher(url);
 			dispatcher.include(request, wrappedResponse);
 			writer.flush();
+			ret = buffer.toString();
+			writer.close();
 		} catch(Exception e) {
 			Hello.errorLog("{Hello.includePage} url:" + url, e);
+		} finally {
+			if(osw != null) try { osw.close(); } catch (Exception ignored) {}
+			if(buffer != null) try { buffer.close(); } catch (Exception ignored) {}
 		}
-		return buffer.toString();
+		return ret;
 	}
 
 	public String getRemoteAddr() {
@@ -1274,11 +1312,11 @@ public class Hello {
         return ip;
 	}
 
-	public void mail(String mailTo, String subject, String body) throws Exception {
+	public void mail(String mailTo, String subject, String body) {
 		mail(mailTo, subject, body, null);
 	}
 
-	public void mail(String mailTo, String subject, String body, String filepath) throws Exception {
+	public void mail(String mailTo, String subject, String body, String filepath) {
 		try {
 			Mail mail = new Mail();
 			mail.setFrom(this.mailFrom);
@@ -1288,22 +1326,22 @@ public class Hello {
 		}
 	}
 	
-	public void mailer(String mailTo, String subject, String body) throws Exception {
+	public void mailer(String mailTo, String subject, String body) {
 		mailer(mailTo, subject, body, null);
 	}
 	
-	public void mailer(String mailTo, String subject, String body, String filepath) throws Exception {
+	public void mailer(String mailTo, String subject, String body, String filepath) {
 		MailThread mt = new MailThread(mailFrom, mailTo, subject, body, filepath);
 		mt.start();
 	}
 	
 	private static class MailThread extends Thread {
 
-		private String mailFrom;
-		private String mailTo;
-		private String subject;
-		private String body;
-		private String filepath;
+		private final String mailFrom;
+		private final String mailTo;
+		private final String subject;
+		private final String body;
+		private final String filepath;
 
 		public MailThread(String mailFrom, String mailTo, String subject, String body, String filepath) {
 			this.mailFrom = mailFrom;

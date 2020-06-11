@@ -44,9 +44,9 @@ public class Json {
 	
 	public void setError(String msg, Exception ex) {
 		try {
-			if(null != out && debug == true) out.write("<hr>" + msg + "###" + ex + "<hr>");
-			if(ex != null || debug == true) Hello.errorLog(msg, ex);
-		} catch(Exception e) {}
+			if(null != out && debug) out.write("<hr>" + msg + "###" + ex + "<hr>");
+			if(ex != null || debug) Hello.errorLog(msg, ex);
+		} catch(Exception ignored) {}
 	}
 
 	public void setWriter(Writer out) {
@@ -97,18 +97,17 @@ public class Json {
 
 	private Object get(String path) throws Exception {
 		if(path.startsWith("//")) path = path.substring(2);
-		String[] p = path.split("[\\.\\[\\]\\/]");
+		String[] p = path.split("[.\\[\\]/]");
 
 		if(data == null) parse();
 		Object obj = data;
-		for(int i=0; i<p.length; i++) {
-			String key = p[i];
-			if("".equals(key)) continue;
-			if(isNumeric(key)) {
+		for (String key : p) {
+			if ("".equals(key)) continue;
+			if (isNumeric(key)) {
 				int idx = Integer.parseInt(key);
-				obj = ((JSONArray)obj).get(idx);
+				obj = ((JSONArray) obj).get(idx);
 			} else {
-				obj = ((JSONObject)obj).get(key);
+				obj = ((JSONObject) obj).get(key);
 			}
 		}
 		return obj;
@@ -239,54 +238,58 @@ public class Json {
 	public String toString() {
 		return data != null ? data.toString() : "";
 	}
-/*	
+
 	public String toXML() {
-		return XML.toString((JSONObject)data);
-	}
-*/
-	public void print() throws Exception {
-		if(data != null) out.write(data.toString());
+		return XML.toString(data);
 	}
 
-	public void error(int code, String message) throws Exception {
+	public void print() {
+		try {
+			if (data != null) out.write(data.toString());
+		} catch(Exception ignored) {}
+	}
+
+	public void error(int code, String message) {
 		print(code, message, null);
 	}
 	
-	public void success(String message, Object data) throws Exception {
+	public void success(String message, Object data) {
 		print(0, message, data);
 	}
 
-	public void print(int code, String message) throws Exception {
+	public void print(int code, String message) {
 		print(code, message, null);
 	}
 	
-	public void print(int code, String message, Object obj) throws Exception {
-		JSONObject ret = new JSONObject();
-		ret.put("error", code);
-		ret.put("message", message);
-		if(obj != null) {
-			if(obj instanceof Map) ret.put("data", new JSONObject((Map<?,?>)obj));
-			else if(obj instanceof List) ret.put("data", new JSONArray((List<?>)obj));
-			else ret.put("data", obj.toString());
-		} else if(data != null) {
-			ret.put("data", this.data);
-		}
-		out.write(ret.toString());
+	public void print(int code, String message, Object obj) {
+		try {
+			JSONObject ret = new JSONObject();
+			ret.put("error", code);
+			ret.put("message", message);
+			if (obj != null) {
+				if (obj instanceof Map) ret.put("data", new JSONObject((Map<?, ?>) obj));
+				else if (obj instanceof List) ret.put("data", new JSONArray((List<?>) obj));
+				else ret.put("data", obj.toString());
+			} else if (data != null) {
+				ret.put("data", this.data);
+			}
+			out.write(ret.toString());
+		} catch(Exception ignored) {}
 	}
 
-	public static String encode(Map<?,?> map) throws Exception {
+	public static String encode(Map<?,?> map) {
 		return new JSONObject(map).toString();
 	}
 	
-	public static String encode(List<?> list) throws Exception {
+	public static String encode(List<?> list) {
 		return new JSONArray(list).toString();
 	}
 
-	public static HashMap<String, Object> decode(String str) throws Exception {
+	public static HashMap<String, Object> decode(String str) {
 		return decode(new JSONObject(str));
 	}
 	
-	public static HashMap<String, Object> decode(JSONObject arr) throws Exception {
+	public static HashMap<String, Object> decode(JSONObject arr) {
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		for(String key : arr.keySet()) {
 			if(arr.get(key) instanceof JSONObject) {
@@ -300,11 +303,11 @@ public class Json {
 		return map;
 	}
 	
-	public static ArrayList<Object> decodeArray(String str) throws Exception {
+	public static ArrayList<Object> decodeArray(String str) {
 		return decodeArray(new JSONArray(str));
 	}
 	
-	public static ArrayList<Object> decodeArray(JSONArray arr) throws Exception {
+	public static ArrayList<Object> decodeArray(JSONArray arr) {
 		ArrayList<Object> list = new ArrayList<Object>();
 		for(int i=0; i<arr.length(); i++) {
 			if(arr.get(i) instanceof JSONArray) {

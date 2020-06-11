@@ -6,7 +6,7 @@ import java.io.Writer;
 public class Cache {
 
 	private int timeout = 300; //second
-	private String cacheDir;
+	private final String cacheDir;
 
 	private Writer out = null;
 	private boolean debug = false;
@@ -14,7 +14,9 @@ public class Cache {
 	public Cache() {
 		cacheDir = Config.get("cacheDir", Config.getDataDir() + "/cache");
 		File dir = new File(cacheDir);
-		if(!dir.exists()) dir.mkdirs();
+		if(!dir.exists() && !dir.mkdirs()) {
+			Hello.errorLog("{Cache}", new Exception(cacheDir + " is not writable."));
+		}
 	}
 
 	public void setDebug() {
@@ -29,9 +31,9 @@ public class Cache {
 
 	public void setError(String msg, Exception ex) {
 		try {
-			if(null != out && debug == true) out.write("<hr>" + msg + "###" + ex + "<hr>");
-			if(ex != null || debug == true) Hello.errorLog(msg, ex);
-		} catch(Exception e) {}
+			if(null != out && debug) out.write("<hr>" + msg + "###" + ex + "<hr>");
+			if(ex != null || debug) Hello.errorLog(msg, ex);
+		} catch(Exception ignored) {}
 	}
 
 	public void setTimeout(int t) {
@@ -66,7 +68,7 @@ public class Cache {
 	public boolean print(Writer out, String key) {
 		String data = getString(key);
 		if(data != null) {
-			try { out.write(data); } catch(Exception e) {}
+			try { out.write(data); } catch(Exception ignored) {}
 			return true;
 		}
 		return false;
@@ -78,7 +80,7 @@ public class Cache {
 
 	public void savePrint(String key, Object data, Writer out) {
 		save(key, data);
-		try { out.write(data.toString()); } catch(Exception e) {} 
+		try { out.write(data.toString()); } catch(Exception ignored) {}
 	}
 
 	private String getCachePath(String key) {

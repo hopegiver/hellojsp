@@ -1,5 +1,6 @@
 package hellojsp.util;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
 
@@ -17,34 +18,33 @@ import javax.mail.internet.MimeMultipart;
 
 public class Mail {
 
+	protected String from;
+	protected String mailHost;
+	protected int mailPort;
 	protected String mailFrom;
-	
-	protected String smtpHost;
-	protected int smtpPort;
-	protected String smtpFrom;
-	protected String smtpId;
-	protected String smtpPw;	
+	protected String mailId;
+	protected String mailPass;
 	protected boolean ssl = false;
-	protected String encoding = "utf-8";
+	protected String encoding = Config.getEncoding();
 
 	public Mail() {
-		smtpHost = Config.get("smtpHost");
-		if(smtpHost == null) smtpHost = "127.0.0.1";
-		smtpPort = Config.getInt("smtpPort");
-		if(smtpPort == 0) smtpPort = 25;
-		smtpFrom = Config.get("smtpFrom");	
+		mailHost = Config.get("mailHost");
+		if(mailHost == null) mailHost = "127.0.0.1";
+		mailPort = Config.getInt("mailPort");
+		if(mailPort == 0) mailPort = 25;
+		mailFrom = Config.get("mailFrom");
 	}
 
 	public void setFrom(String from) {
-		this.mailFrom = from;
+		this.from = from;
 	}
 
 	public void setHost(String host) {
-		this.smtpHost = host;
+		this.mailHost = host;
 	}
 
 	public void setPort(int port) {
-		this.smtpPort = port;
+		this.mailPort = port;
 	}
 
 	public void setSSL(boolean flag) {
@@ -57,17 +57,17 @@ public class Mail {
 		
 	protected Session getSession() {
 		Properties props = new Properties();
-		props.put("mail.smtp.host", smtpHost);
-		props.put("mail.smtp.port", "" + smtpPort);
-		if(smtpFrom != null) props.put("mail.smtp.from", smtpFrom);
+		props.put("mail.smtp.host", mailHost);
+		props.put("mail.smtp.port", "" + mailPort);
+		if(mailFrom != null) props.put("mail.smtp.from", mailFrom);
 
-		if(smtpId != null && smtpPw != null) {
+		if(mailId != null && mailPass != null) {
 			props.put("mail.smtp.auth", "true");
 			if(this.ssl) {
 				props.put("mail.smtp.starttls.enable","true");
 				props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory"); 
 			}
-			SmtpAuthenticator auth = new SmtpAuthenticator(smtpId, smtpPw);
+			SmtpAuthenticator auth = new SmtpAuthenticator(mailId, mailPass);
 			
 			return Session.getInstance(props, auth);
 		} else {
@@ -75,65 +75,68 @@ public class Mail {
 		}
 	}
 
-	public void send(String mailTo, String subject, String body) throws Exception {
+	public void send(String mailTo, String subject, String body) {
 		send(new String[] { mailTo }, subject, body, null);
 	}
 
-	public void send(String mailTo, String subject, String body, String file) throws Exception {
+	public void send(String mailTo, String subject, String body, String file) {
 		send(new String[] { mailTo }, subject, body, new String[] { file });
 	}
 	
-	public void send(String mailTo, String subject, String body, String[] files) throws Exception {
+	public void send(String mailTo, String subject, String body, String[] files) {
 		send(new String[] { mailTo }, subject, body, files);
 	}
 
-	public void send(String[] mailTo, String subject, String body) throws Exception {
+	public void send(String[] mailTo, String subject, String body) {
 		send(mailTo, subject, body, null);
 	}
 
-	public void send(String[] mailTo, String subject, String body, String[] files) throws Exception {
-
-		MimeMessage msg = new MimeMessage(getSession());
-		InternetAddress from = new InternetAddress(mailFrom);
-		if(!"".equals(from.getPersonal())) from.setPersonal(from.getPersonal(), encoding);
-		InternetAddress[] to = new InternetAddress[mailTo.length];
-		for(int i=0; i<mailTo.length; i++) {
-			to[i] = new InternetAddress(mailTo[i]);
-			if(!"".equals(to[i].getPersonal())) to[i].setPersonal(to[i].getPersonal(), encoding);
-		}
-
-		msg.setFrom(from);
-		msg.setRecipients(MimeMessage.RecipientType.TO, to);
-		msg.setSubject(subject, encoding);
-		msg.setSentDate(new Date());
-
-		if(files == null) {
-			msg.setContent(body, "text/html; charset=" + encoding);
-		} else {
-			for(int i=0; i<files.length; i++) {
-				MimeBodyPart mbp1 = new MimeBodyPart();
-				mbp1.setContent(body, "text/html; charset=" + encoding);
-				MimeBodyPart mbp2 = new MimeBodyPart();
-
-				FileDataSource fds = new FileDataSource(files[i]);
-				mbp2.setDataHandler(new DataHandler(fds));
-				mbp2.setFileName(fds.getName());
-
-				Multipart mp = new MimeMultipart();
-				mp.addBodyPart(mbp1);
-				mp.addBodyPart(mbp2);
-
-				msg.setContent(mp);
+	public void send(String[] mailTo, String subject, String body, String[] files) {
+		try {
+			MimeMessage msg = new MimeMessage(getSession());
+			InternetAddress from = new InternetAddress(this.from);
+			if (!"".equals(from.getPersonal())) from.setPersonal(from.getPersonal(), encoding);
+			InternetAddress[] to = new InternetAddress[mailTo.length];
+			for (int i = 0; i < mailTo.length; i++) {
+				to[i] = new InternetAddress(mailTo[i]);
+				if (!"".equals(to[i].getPersonal())) to[i].setPersonal(to[i].getPersonal(), encoding);
 			}
-		}
 
-		Transport.send(msg);
+			msg.setFrom(from);
+			msg.setRecipients(MimeMessage.RecipientType.TO, to);
+			msg.setSubject(subject, encoding);
+			msg.setSentDate(new Date());
+
+			if (files == null) {
+				msg.setContent(body, "text/html; charset=" + encoding);
+			} else {
+				for (String file : files) {
+					MimeBodyPart mbp1 = new MimeBodyPart();
+					mbp1.setContent(body, "text/html; charset=" + encoding);
+					MimeBodyPart mbp2 = new MimeBodyPart();
+
+					FileDataSource fds = new FileDataSource(file);
+					mbp2.setDataHandler(new DataHandler(fds));
+					mbp2.setFileName(fds.getName());
+
+					Multipart mp = new MimeMultipart();
+					mp.addBodyPart(mbp1);
+					mp.addBodyPart(mbp2);
+
+					msg.setContent(mp);
+				}
+			}
+
+			Transport.send(msg);
+		} catch (Exception e) {
+			Hello.errorLog("{Mail.send} mailTo:" + Arrays.toString(mailTo) + ", subject:" + subject, e);
+		}
 	}
 
 	private static class SmtpAuthenticator extends Authenticator {
 
-		private String id = null;
-		private String pw = null;
+		private String id;
+		private String pw;
 
 		public SmtpAuthenticator(String id, String pw) {
 			this.id = id;

@@ -12,8 +12,8 @@ public class Auth {
 
 	private static String secretId = Hello.getUniqId(16);
 	
-	private HttpServletRequest request;
-	private HttpServletResponse response;
+	private final HttpServletRequest request;
+	private final HttpServletResponse response;
 	private HttpSession session;
 	private HashMap<String, Object> data = new HashMap<String, Object>();
 	private boolean debug = false;
@@ -49,9 +49,9 @@ public class Auth {
 	
 	public void setError(String msg, Exception ex) {
 		try {
-			if(null != out && debug == true) out.write("<hr>" + msg + "###" + ex + "<hr>");
-			if(ex != null || debug == true) Hello.errorLog(msg, ex);
-		} catch(Exception e) {}
+			if(null != out && debug) out.write("<hr>" + msg + "###" + ex + "<hr>");
+			if(ex != null || debug) Hello.errorLog(msg, ex);
+		} catch(Exception ignored) {}
 	}
 
 	public void setSecretId(String id) {
@@ -82,14 +82,14 @@ public class Auth {
 		return this.isValid;
 	}
 
-	public boolean validate() throws Exception {
+	public boolean validate() {
 		String cookie = null;
 		if(session == null) {
 			Cookie[] cookies = request.getCookies();
 			if(cookies !=null) {
-				for(int i=0; i<cookies.length; i++) {
-					if(cookies[i].getName().equals(keyName)) {
-						cookie = cookies[i].getValue();
+				for (Cookie value : cookies) {
+					if (value.getName().equals(keyName)) {
+						cookie = value.getValue();
 					}
 				}
 			}
@@ -174,7 +174,7 @@ public class Auth {
 		data.put(name, d);
 	}
 	
-	public void save() throws Exception {
+	public void save() {
 		if(data.size() > 0) {
 			data.put("currtime", System.currentTimeMillis());
 			String dataStr = Json.encode(data);

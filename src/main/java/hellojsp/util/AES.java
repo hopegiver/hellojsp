@@ -35,9 +35,9 @@ public class AES {
 	
 	public void setError(String msg, Exception ex) {
 		try {
-			if(null != out && debug == true) out.write("<hr>" + msg + "###" + ex + "<hr>");
-			if(ex != null || debug == true) Hello.errorLog(msg, ex);
-		} catch(Exception e) {}
+			if(null != out && debug) out.write("<hr>" + msg + "###" + ex + "<hr>");
+			if(ex != null || debug) Hello.errorLog(msg, ex);
+		} catch(Exception ignored) {}
 	}
 	
 	public void setKey(String keyString) {
@@ -55,7 +55,7 @@ public class AES {
 				setError("", new Exception("IV is not 16 bytes"));
 			}
 		} catch(Exception e) {
-			setError("{AES.setKey} key:" + key, e);
+			setError("{AES.setKey} key:" + keyString + ", iv:" + ivString, e);
 		}
 	}
 

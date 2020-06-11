@@ -1,9 +1,7 @@
 package hellojsp.util;
 
 import java.util.StringTokenizer;
-
 import javax.servlet.http.HttpServletRequest;
-
 
 public class Pager {
 
@@ -18,11 +16,11 @@ public class Pager {
 
 	public int linkType = 0;
 
-	public Pager() throws Exception {
+	public Pager() {
 
 	}
 
-	public Pager(HttpServletRequest req) throws Exception {
+	public Pager(HttpServletRequest req) {
 		_request = req;
 	}
 
@@ -61,45 +59,59 @@ public class Pager {
 	}
 
 	public int getRightPage() {
-		int totalPage = (int)(java.lang.Math.ceil((double)totalNum / (double)listNum));
-		int firstPage = (int)(( java.lang.Math.ceil( (double)pageNum / (double)naviNum ) - 1 ) * (double)naviNum + 1);
+		int totalPage = getTotalPage();
+		int firstPage = getFirstPage();
 		int lastPage = firstPage + naviNum - 1;
 		if(lastPage < totalPage) return lastPage + 1;
 		else return 0;
 	}
 
-	public String getPager() throws Exception {
+	public int getTotalPage() {
+		return (int)(java.lang.Math.ceil((double)totalNum / (double)listNum));
+	}
+
+	public int getFirstPage() {
+		return (int)(( java.lang.Math.ceil( (double)pageNum / (double)naviNum ) - 1 ) * (double)naviNum + 1);
+	}
+
+	public String getPager() {
 
 		parseQuery();
 
 		if(totalNum == 0) return "";
-		int totalPage = (int)(java.lang.Math.ceil((double)totalNum / (double)listNum));
-		int firstPage = (int)(( java.lang.Math.ceil( (double)pageNum / (double)naviNum ) - 1 ) * (double)naviNum + 1);
+		int totalPage = getTotalPage();
+		int firstPage = getFirstPage();
 		int lastPage = firstPage + naviNum - 1;
 		if(totalPage < lastPage) {
 			lastPage = totalPage;
 		}
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		
 		sb.append("<ul class='pagination'>");
-		sb.append("<li class='page-item'><a class='page-link' href='"+ (pageNum > 1 ? getPageLink(pageNum-1) : "#") +"' title='Previous'>&laquo;</a></li>");
+		if(totalPage > naviNum) {
+			sb.append("<li class='page-item'><a class='page-link' href='").append(pageNum > 1 ? getPageLink(firstPage - 1) : "#").append("' title='Previous block'>&laquo;</a></li>");
+		}
+		sb.append("<li class='page-item'><a class='page-link' href='").append(pageNum > 1 ? getPageLink(pageNum - 1) : "#").append("' title='Previous'>&lsaquo;</a></li>");
 
 		for(int i = firstPage; i <= lastPage; i++) {
 			if(pageNum == i) {
-				sb.append("<li class='page-item active'><a class='page-link' href='#' title='" + i + "'>" + i + "</a></li>");
+				sb.append("<li class='page-item active'><a class='page-link' href='#' title='").append(i).append("'>").append(i).append("</a></li>");
 			} else {
-				sb.append("<li class='page-item'><a class='page-link' href='" + getPageLink(i) + "' title='" + i + "'>" + i + "</a></li>");
+				sb.append("<li class='page-item'><a class='page-link' href='").append(getPageLink(i)).append("' title='").append(i).append("'>").append(i).append("</a></li>");
 			}
 		}
 
-		sb.append("<li class='page-item'><a class='page-link' href='"+ (pageNum < totalPage ? getPageLink(pageNum + 1) : "#") +"' title='Next'>&raquo;</a></li>");
+		sb.append("<li class='page-item'><a class='page-link' href='").append(pageNum < totalPage ? getPageLink(pageNum + 1) : "#").append("' title='Next'>&rsaquo;</a></li>");
+		if(totalPage > naviNum) {
+			sb.append("<li class='page-item'><a class='page-link' href='").append(pageNum < totalPage ? getPageLink((lastPage < totalPage) ? lastPage + 1 : lastPage) : "#").append("' title='Next block'>&raquo;</a></li>");
+		}
 		sb.append("</ul>");
 
 		return sb.toString();
 	}
 	
-	public DataSet getPageData() throws Exception {
+	public DataSet getPageData() {
 
 		parseQuery();
 
@@ -142,17 +154,17 @@ public class Pager {
 		return info;
 	}
 
-	private void parseQuery() throws Exception {
+	private void parseQuery() {
 		if(_request == null) return;
 		
 		link = _request.getRequestURI() + "?";
 		String query = _request.getQueryString();
 		if(query != null) {
 			StringTokenizer token = new StringTokenizer(query, "&");
-			String subtoken = null;
-			String key = null;
-			String value = null;
-			StringBuffer sb = new StringBuffer();
+			String subtoken;
+			String key;
+			String value;
+			StringBuilder sb = new StringBuilder();
 			while(token.hasMoreTokens()) {
 				int itmp;
 				subtoken = token.nextToken();
@@ -160,7 +172,7 @@ public class Pager {
 					key = subtoken.substring(0,itmp);
 					value = subtoken.substring(itmp+1);
 					if(!key.equals(pageVar)) {
-						sb.append(key + "=" + value + "&");
+						sb.append(key).append("=").append(value).append("&");
 					} else {
 						this.pageNum = Integer.parseInt(value);
 					}
@@ -172,6 +184,7 @@ public class Pager {
 	}
 
 	private String getPageLink(int num) {
+		if(num < 1) num = 1;
 		if(linkType == 1) return "javascript:MovePage(" + num + ")";
 		else return link + pageVar + "=" + num;
 	}

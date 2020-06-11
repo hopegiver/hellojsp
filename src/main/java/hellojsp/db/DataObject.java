@@ -54,11 +54,11 @@ public class DataObject {
 	protected void setError(String msg) {
 		this.errMsg = msg;
 		try {
-			if(debug == true) {
+			if(debug) {
 				if(null != out) out.write("<hr>" + msg + "<hr>\n");
 				else Hello.errorLog(msg);
 			}
-		} catch(Exception ex) {}
+		} catch(Exception ignored) {}
 	}
 	
 	public void setDatabase(String id) {
@@ -102,15 +102,15 @@ public class DataObject {
 	}
 
 	public void item(String name, int obj) {
-		record.put(name, new Integer(obj));
+		record.put(name, obj);
 	}
 
 	public void item(String name, long obj) {
-		record.put(name, new Long(obj));
+		record.put(name, obj);
 	}
 
 	public void item(String name, double obj) {
-		record.put(name, new Double(obj));
+		record.put(name, obj);
 	}
 
 	public void item(String name, String value, String fc) {
@@ -211,6 +211,24 @@ public class DataObject {
     	return db.getProduct();
     }
 
+	public DataSet select(String statement, Object parameters) {
+		DataSet rs = new DataSet();
+		try {
+			long stime = System.currentTimeMillis();
+
+			if(db == null) db = new DB(databaseId);
+			if(debug) db.setDebug(out);
+			rs = db.select(statement, parameters);
+
+			long etime = System.currentTimeMillis();
+			setError("Execution Time : " + (etime - stime) + " (1/1000 sec)");
+
+		} catch(Exception e) {
+			if(db != null) this.errMsg = db.errMsg;
+			Hello.errorLog("{DataObject.selectLimit} " + e.getMessage(), e);
+		}
+		return rs;
+	}
 	public DataSet selectLimit(String sql, int limit) {
 		return selectLimit(sql, null, limit);
 	}
@@ -222,7 +240,7 @@ public class DataObject {
 			long stime = System.currentTimeMillis();
 
 			if(db == null) db = new DB(databaseId);
-			if(debug == true) db.setDebug(out);
+			if(debug) db.setDebug(out);
 
 			sql = sql.trim();
 			String dbType = getDBType();
@@ -241,7 +259,7 @@ public class DataObject {
 			setError("Execution Time : " + (etime - stime) + " (1/1000 sec)");
 			
 		} catch(Exception e) {
-			this.errMsg = db.errMsg;
+			if(db != null) this.errMsg = db.errMsg;
 			Hello.errorLog("{DataObject.selectLimit} " + e.getMessage(), e);
 		}
 		return rs;
@@ -258,7 +276,7 @@ public class DataObject {
 			long stime = System.currentTimeMillis();
 
 			if(db == null) db = new DB(databaseId);
-			if(debug == true) db.setDebug(out);
+			if(debug) db.setDebug(out);
 
 			sql = sql.trim();
 			String dbType = getDBType();
@@ -277,7 +295,7 @@ public class DataObject {
 			setError("Execution Time : " + (etime - stime) + " (1/1000 sec)");
 			
 		} catch(Exception e) {
-			this.errMsg = db.errMsg;
+			if(db != null) this.errMsg = db.errMsg;
 			Hello.errorLog("{DataObject.selectRandom} " + e.getMessage(), e);
 		}
 		return rs;
@@ -298,10 +316,10 @@ public class DataObject {
 	public boolean insert() {
 
 		int max = record.size();
-		StringBuffer sb = new StringBuffer();
-		StringBuffer sb2 = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
+		StringBuilder sb2 = new StringBuilder();
 
-		sb.append("INSERT INTO " + this.table + " (");
+		sb.append("INSERT INTO ").append(this.table).append(" (");
 		int k = 0;
 		Object[] args = new Object[max];
 		for(String key : record.keySet()) {
@@ -319,9 +337,14 @@ public class DataObject {
 	
 		int ret = execute(sb.toString() + sb2.toString(), args);
 		
-		return ret > 0 ? true : false;
+		return ret > 0;
 	}
-	
+
+	public int insert(boolean withId) {
+		if(withId) return insertWithId();
+		else return 0;
+	}
+
 	public int insertWithId() {
 		setInsertId();
 		insert();
@@ -330,10 +353,10 @@ public class DataObject {
 	
 	public boolean replace() {
 		int max = record.size();
-		StringBuffer sb = new StringBuffer();
-		StringBuffer sb2 = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
+		StringBuilder sb2 = new StringBuilder();
 
-		sb.append("REPLACE INTO " + this.table + " (");
+		sb.append("REPLACE INTO ").append(this.table).append(" (");
 		int k = 0;
 		Object[] args = new Object[max];
 		for(String key : record.keySet()) {
@@ -351,7 +374,7 @@ public class DataObject {
 		String sql = sb.toString() + sb2.toString();
 
 		int ret = execute(sql, args);
-		return ret > 0 ? true : false;
+		return ret > 0;
 	}
 
 	public boolean update() {
@@ -359,24 +382,24 @@ public class DataObject {
 	}
 	public boolean update(String where) {
 		int max = record.size();
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
-		sb.append("UPDATE " + this.table + " SET ");
+		sb.append("UPDATE ").append(this.table).append(" SET ");
 		int k = 0;
 		Object[] args = new Object[max];
 		for(String key : record.keySet()) {
 			if(func.containsKey(key)) {
-				sb.append(key + "=" + func.get(key));
+				sb.append(key).append("=").append(func.get(key));
 			} else {
-				sb.append(key + "=?");
+				sb.append(key).append("=?");
 			}
 			args[k] = record.get(key);
 			if(k++ < (max - 1)) sb.append(",");
 		}
-		sb.append(" WHERE " + where);
+		sb.append(" WHERE ").append(where);
 		
 		int ret = execute(sb.toString(), args);
-		return ret > -1 ? true : false;
+		return ret > -1;
 	}
 
 	public boolean delete() {
@@ -391,7 +414,7 @@ public class DataObject {
 		String sql = "DELETE FROM " + this.table + " WHERE " + where;
 
 		int ret = execute(sql);
-		return ret > -1 ? true : false;
+		return ret > -1;
 	}
  
 	public void setInsertId() {
@@ -409,7 +432,7 @@ public class DataObject {
 			long stime = System.currentTimeMillis();
 
 			if(db == null) db = new DB(databaseId);
-			if(debug == true) db.setDebug(out);
+			if(debug) db.setDebug(out);
 			rs = db.query(sql);
 
 			if(rs == null) this.errMsg = db.errMsg;
@@ -419,14 +442,14 @@ public class DataObject {
 			}
 
 		} catch(Exception e) {
-			this.errMsg = db.errMsg;
+			if(db != null) this.errMsg = db.errMsg;
 			Hello.errorLog("{DataObject.query} " + e.getMessage(), e);
 		}
 		return rs;
 	}
 
 	public DataSet query(String sql, List<Object> list) {
-		return query(sql, list.toArray(new Object[list.size()]));
+		return query(sql, list.toArray(new Object[0]));
 	}
 	public DataSet query(String sql, Object[] args) {
 		DataSet rs = null;
@@ -435,7 +458,7 @@ public class DataObject {
 			long stime = System.currentTimeMillis();
 
 			if(db == null) db = new DB(databaseId);
-			if(debug == true) db.setDebug(out);
+			if(debug) db.setDebug(out);
 			rs = db.query(sql, args);
 
 			if(rs == null) this.errMsg = db.errMsg;
@@ -445,7 +468,7 @@ public class DataObject {
 			}
 
 		} catch(Exception e) {
-			this.errMsg = db.errMsg;
+			if(db != null) this.errMsg = db.errMsg;
 			Hello.errorLog("{DataObject.query} " + e.getMessage(), e);
 		}
 		return rs;
@@ -466,26 +489,26 @@ public class DataObject {
 			long stime = System.currentTimeMillis();
 
 			if(db == null) db = new DB(databaseId);
-			if(debug == true) db.setDebug(out);
-			if(insertId == true) db.setInsertId();
+			if(debug) db.setDebug(out);
+			if(insertId) db.setInsertId();
 			
 			ret = db.execute(sql);
 
-			if(insertId == true) newId = db.getInsertId();
+			if(insertId) newId = db.getInsertId();
 			if(ret == -1) this.errMsg = db.errMsg;
 			else {
 				long etime = System.currentTimeMillis();
 				setError("Execution Time : " + (etime - stime) + " (1/1000 sec)");
 			}
 		} catch(Exception e) {
-			this.errMsg = db.errMsg;
+			if(db != null) this.errMsg = db.errMsg;
 			Hello.errorLog("{DataObject.execute} " + e.getMessage(), e);
 		}
 		return ret;
 	}
 
 	public int execute(String sql, List<Object> list) {
-		return execute(sql, list.toArray(new Object[list.size()]));
+		return execute(sql, list.toArray(new Object[0]));
 	}
 	public int execute(String sql, Object[] args) {
 		int ret = -1;
@@ -494,19 +517,19 @@ public class DataObject {
 			long stime = System.currentTimeMillis();
 
 			if(db == null) db = new DB(databaseId);
-			if(debug == true) db.setDebug(out);
-			if(insertId == true) db.setInsertId();
+			if(debug) db.setDebug(out);
+			if(insertId) db.setInsertId();
 			
 			ret = db.execute(sql, args);
 			
-			if(insertId == true) newId = db.getInsertId();
+			if(insertId) newId = db.getInsertId();
 			if(ret == -1) this.errMsg = db.errMsg;
 			else {
 				long etime = System.currentTimeMillis();
 				setError("Execution Time : " + (etime - stime) + " (1/1000 sec)");
 			}
 		} catch(Exception e) {
-			this.errMsg = db.errMsg;
+			if(db != null) this.errMsg = db.errMsg;
 			Hello.errorLog("{DataObject.execute} " + e.getMessage(), e);
 		}
 		return ret;
@@ -519,7 +542,7 @@ public class DataObject {
 			long stime = System.currentTimeMillis();
 
 			if(db == null) db = new DB(databaseId);
-			if(debug == true) db.setDebug(out);
+			if(debug) db.setDebug(out);
 			rs = db.call(sql, args, types);
 
 			if(rs == null) this.errMsg = db.errMsg;
@@ -529,7 +552,7 @@ public class DataObject {
 			}
 
 		} catch(Exception e) {
-			this.errMsg = db.errMsg;
+			if(db != null) this.errMsg = db.errMsg;
 			Hello.errorLog("{DataObject.query} " + e.getMessage(), e);
 		}
 		return rs;
@@ -538,9 +561,9 @@ public class DataObject {
 	public void startTrans() {
 		try {
 			if(db == null) db = new DB(databaseId);
-			if(debug == true) db.setDebug(out);
+			if(debug) db.setDebug(out);
 			db.begin();
-		} catch(Exception e) {}
+		} catch(Exception ignored) {}
 	}
 
 	public void startTransWith(DataObject... daos) {
@@ -553,7 +576,7 @@ public class DataObject {
 	public void endTrans() {
 		try {
 			if(db != null) db.commit();
-		} catch(Exception e) {}
+		} catch(Exception ignored) {}
 	}
 
 	public DB getDB() {

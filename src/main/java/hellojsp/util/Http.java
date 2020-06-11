@@ -10,21 +10,13 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
 
-/**
- * <pre>
- * Http http = new Http("http://aaa.com/data/test.jsp");
- * //http.setDebug(out);
- * http.setParam("var", "aaa");
- * http.send("GET", false);
- * </pre>
- */
 public class Http {
 
 	private Writer out = null;
 	private boolean debug = false;
 	private String url = null;
-	private HashMap<String, String> headers = new HashMap<String, String>();
-	private HashMap<String, String> params = new HashMap<String, String>();
+	private final HashMap<String, String> headers = new HashMap<String, String>();
+	private final HashMap<String, String> params = new HashMap<String, String>();
 	private String encoding = Config.getEncoding();
 	private String method = "GET";
 	private String data = null;
@@ -48,8 +40,8 @@ public class Http {
 
 	private void setError(String msg) {
 		this.errMsg = msg;
-		if(debug == true) {
-			if(null != out) try { out.write("<hr>" + msg + "<hr>\n"); } catch(Exception e) {}
+		if(debug) {
+			if(null != out) try { out.write("<hr>" + msg + "<hr>\n"); } catch(Exception ignored) {}
 			else Hello.errorLog(msg);
 		}
 	}
@@ -84,18 +76,22 @@ public class Http {
 	}
 
 	public String send(String method) {
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		String line;
 		try {
 			// Construct data
 			if(data == null) {
+				StringBuilder sb = new StringBuilder();
+				int i = 0;
 				for(String name : params.keySet()) {
-					if(data == null) data = URLEncoder.encode(name, encoding) + "=" + URLEncoder.encode(params.get(name), encoding);
-					else data += "&" + URLEncoder.encode(name, encoding) + "=" + URLEncoder.encode(params.get(name), encoding);
+					if(i > 0) { sb.append("&"); }
+					sb.append(URLEncoder.encode(name, encoding)).append("=").append(URLEncoder.encode(params.get(name), encoding));
+					i++;
 				}
+				data = sb.toString();
 			}
 
-			if("GET".equals(method) && data != null && !"".equals(data)) {
+			if("GET".equals(method) && !"".equals(data)) {
 				if(url.indexOf("?") > 0) {
 					this.url += "&" + data;	
 				} else {
@@ -111,7 +107,6 @@ public class Http {
 			conn.setUseCaches(false);
 			conn.setRequestProperty("User-Agent", "Mozilla/5.0");
 
-			//헤더정보가 있을 경우
 			for(String key : headers.keySet()) {
 				conn.setRequestProperty(key, headers.get(key));
 				setError(key + ":" + headers.get(key));
@@ -119,7 +114,6 @@ public class Http {
 
 			if("POST".equals(method) || "PUT".equals(method) || "DELETE".equals(method)) {
 				conn.setDoOutput(true);
-				//conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 				if(data != null) {
 					OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream(), encoding);
 					setError(data);
@@ -136,7 +130,7 @@ public class Http {
 			int i = 1;
 			while((line = in.readLine()) != null) {
 				if(i > 1000) break;
-				buffer.append(line + "\r\n");
+				buffer.append(line).append("\r\n");
 				i++;
 			}
 			in.close();
@@ -156,9 +150,8 @@ public class Http {
 
 class HttpAsync extends Thread {
 
-	private Http http = null;
-	private HttpListener listener = null;
-	private String result = null;
+	private Http http;
+	private HttpListener listener;
 
 	public HttpAsync(Http h, HttpListener l) {
 		http = h;
@@ -167,10 +160,17 @@ class HttpAsync extends Thread {
 
 	public void run() {
 		try {
-			result = http.send();
+			String result = http.send();
 			if(listener != null) listener.execute(result);
 		} catch(Exception e) {
 			Hello.errorLog("{HttpAsync.run} " + e.getMessage(), e);
 		}
+	}
+}
+
+class HttpListener {
+
+	public void execute(String result) {
+
 	}
 }

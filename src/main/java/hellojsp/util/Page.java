@@ -19,7 +19,7 @@ public class Page {
 	private int type = 0;
 	private Writer out;
 	private boolean debug = false;
-	private HashMap<String, Object> data = new HashMap<String, Object>();
+	private final HashMap<String, Object> data = new HashMap<String, Object>();
 	
 	public Page() {
 		this.root = Config.getTplRoot();
@@ -27,9 +27,12 @@ public class Page {
 	
 	public Page(String root) {
 		this.root = root;
-		setWriter(out);
 	}
-	
+
+	public void setWriter(Writer out) {
+		this.out = out;
+	}
+
 	public void setDebug(Writer out) {
 		this.debug = true;
 		this.out = out;
@@ -41,9 +44,9 @@ public class Page {
 	
 	public void setError(String msg, Exception ex) {
 		try {
-			if(null != out && debug == true) out.write("<hr>" + msg + "###" + ex + "<hr>");
-			if(ex != null || debug == true) Hello.errorLog(msg, ex);
-		} catch(Exception e) {}
+			if(null != out && debug) out.write("<hr>" + msg + "###" + ex + "<hr>");
+			if(ex != null || debug) Hello.errorLog(msg, ex);
+		} catch(Exception ignored) {}
 	}
 	
 	public void setEncoding(String enc) {
@@ -75,10 +78,6 @@ public class Page {
 		data.put(name, value);
 	}
 	
-	public void setWriter(Writer out) {
-		this.out = out;
-	}
-
 	public void print() {
 		if(this.layout == null && this.body == null) this.type = 1;
 		print(this.out);
@@ -100,7 +99,7 @@ public class Page {
 				VelocityContext context = new VelocityContext();
 				for(String key : data.keySet()) context.put(key,  data.get(key));
 
-				String vm = null;
+				String vm;
 				if(this.layout != null) {
 					vm = this.layout;
 					context.put("BODY", this.body);
@@ -127,20 +126,20 @@ public class Page {
 		print();
 	}
 
-	public void display() throws Exception {
+	public void display() {
 		print();
 	}
 
-	public void display(Writer out) throws Exception {
+	public void display(Writer out) {
 		print(out);
 	}
 	
-	public String fetch(String path) throws Exception {
+	public String fetch(String path) {
 		this.body = path.replace(".",  "/") + ".html";
 		return fetch();
 	}
 	
-	public String fetch() throws Exception {
+	public String fetch() {
 		StringWriter sw = new StringWriter();
 		print(sw);
 		return sw.toString();
