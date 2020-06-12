@@ -17,13 +17,6 @@ pom.xml
 ```
 $ mvn install
 
-or
-
- 1. Go to https://github.com/hopegiver/hellojsp-webapp/releases and download lastest hellojsp-resin.zip
- 1. Unzip the file and execute resin.exe in hellojsp-resin folder.
- 1. Explore http://localhost/ in browser.
- 1. You can edit source files in hellojsp-resin/webapps/Root
-
 ## Examples
 Examples project is hellojsp-examples.
 https://github.com/hopegiver/hellojsp-examples
