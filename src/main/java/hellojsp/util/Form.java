@@ -132,7 +132,7 @@ public class Form {
 			while(e.hasMoreElements()) {
 				String key = e.nextElement().toString();
 				data.put(key, request.getParameter(key));
-			}			
+			}
 		}
 	}
 	
@@ -326,8 +326,6 @@ public class Form {
 				f.delete();
 			}
 			if(target.exists()) return target;
-		} else {
-			Hello.errorLog("{Form.saveFile} " + name + " is not uploaded");			
 		}
 		return null;
 	}
