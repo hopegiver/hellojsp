@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.Writer;
 import java.util.Arrays;
 
+import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -43,7 +44,9 @@ public class Excel {
             for(int i=0; i<=total; i++) {
                 rs.addRow();
                 for(int j=0; j<columns.length; j++) {
-                    rs.put(columns[j], sh.getRow(i).getCell(j).getStringCellValue());
+                    Cell cell = sh.getRow(i).getCell(j);
+                    cell.setCellType(CellType.STRING);
+                    rs.put(columns[j], cell.getStringCellValue());
                 }
             }
             rs.first();
