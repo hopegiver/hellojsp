@@ -1127,6 +1127,14 @@ public class Hello {
         } catch(Exception ignored) {}
 	}
 
+	public void p(String obj) {
+		p(obj);
+	}
+
+	public void p(String[] obj) {
+		p(obj);
+	}
+
 	public void p(int i) {
 		p("" + i);
 	}

@@ -70,6 +70,22 @@ public class Page {
 		data.put(name, value);
 	}
 
+	public void setVar(String name, String value) {
+		data.put(name, value);
+	}
+
+	public void setVar(String name, int value) {
+		data.put(name, value);
+	}
+
+	public void setVar(String name, double value) {
+		data.put(name, value);
+	}
+
+	public void setVar(String name, boolean value) {
+		data.put(name, value);
+	}
+
 	public void setVar(String name, DataSet value) {
 		data.put(name, value.getRow());
 	}	

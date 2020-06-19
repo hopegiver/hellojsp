@@ -90,15 +90,18 @@ public class DataObject {
 	}
 
 	public void item(String name, Object obj) {
-		if(obj == null) {
-			record.put(name, "");
-	    } else if(obj instanceof String) {
-			record.put(name, Hello.replace((String)obj, "`", "'"));
-		} else if(obj instanceof Date) {
-			record.put(name, new java.sql.Timestamp(((Date)obj).getTime()));
-		} else {
-			record.put(name, obj);
-		}
+		if(obj == null) record.put(name, "");
+	    else record.put(name, obj);
+	}
+
+	public void item(String name, Date obj) {
+		if(obj == null) record.put(name, "");
+		else record.put(name, new java.sql.Timestamp(((Date)obj).getTime()));
+	}
+
+	public void item(String name, String obj) {
+		if(obj == null) record.put(name, "");
+		else record.put(name, Hello.replace((String)obj, "`", "'"));
 	}
 
 	public void item(String name, int obj) {

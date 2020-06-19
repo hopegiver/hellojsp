@@ -161,9 +161,12 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 		this.put(name, Boolean.valueOf(b));
 	}
 
+	public void put(String name, String value) {
+		get(idx).put(name, value == null ? "" : value);
+	}
+
 	public void put(String name, Object value) {
-		if(value == null) value = "";
-		get(idx).put(name, value);
+		get(idx).put(name, value == null ? "" : value);
 	}
 
 	public Object get(String name) {
