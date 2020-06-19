@@ -43,9 +43,7 @@ public class Excel {
             for(int i=0; i<=total; i++) {
                 rs.addRow();
                 for(int j=0; j<columns.length; j++) {
-                    Cell cell = sh.getRow(i).getCell(j);
-                    cell.setCellType(CellType.STRING);
-                    rs.put(columns[j], cell.getStringCellValue());
+                    rs.put(columns[j], "" + sh.getRow(i).getCell(j));
                 }
             }
             rs.first();

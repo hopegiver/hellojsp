@@ -1096,7 +1096,7 @@ public class Hello {
 	public static String nf(int n) { return numberFormat(n); }
 	public static String nf(double n, int i) { return numberFormat(n, i); }
 
-	public void p(Object obj) {
+	public void print(Object obj) {
 	    try {
             out.write("<pre style='border:1px solid #ccc;margin:10px;padding:10px;font-size:12px;background-color:#f5f5f5'>");
             if (obj != null) {
@@ -1112,7 +1112,7 @@ public class Hello {
         } catch(Exception ignored) {}
 	}
 
-	public void p(Object[] obj) {
+	public void print(Object[] obj) {
 	    try {
 			out.write("<pre style='border:1px solid #ccc;margin:10px;padding:10px;font-size:12px;background-color:#f5f5f5'>");
             if (obj != null) {
@@ -1127,16 +1127,28 @@ public class Hello {
         } catch(Exception ignored) {}
 	}
 
+	public void p(Object obj) {
+		print(obj);
+	}
+
+	public void p(Object[] obj) {
+		print(obj);
+	}
+
 	public void p(String obj) {
-		p(obj);
+		print(obj);
 	}
 
 	public void p(String[] obj) {
-		p(obj);
+		print(obj);
 	}
 
 	public void p(int i) {
-		p("" + i);
+		print("" + i);
+	}
+
+	public void p(double d) {
+		print("" + d);
 	}
 
 	public void p() {
@@ -1318,6 +1330,18 @@ public class Hello {
             ip = request.getRemoteAddr();
         }
         return ip;
+	}
+
+	public boolean urlFilter(String... args) {
+		boolean flag = false;
+		String uri = request.getRequestURI();
+		for(String url : args) {
+			if(uri.matches("^(" + replace(url, "*", "(.*)") + ")")) {
+				flag = true;
+				break;
+			}
+		}
+		return flag;
 	}
 
 	public void mail(String mailTo, String subject, String body) {

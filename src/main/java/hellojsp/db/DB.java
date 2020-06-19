@@ -72,6 +72,10 @@ public class DB {
 		return this.errMsg;
 	}
 
+	public void reloadMapper() {
+		sqlSessionFactoryMap.clear();
+	}
+
 	private SqlSessionFactory getSqlSessionFactory() throws Exception {
 		SqlSessionFactory sqlSessionFactory = sqlSessionFactoryMap.get(databaseId);
 		if(sqlSessionFactory == null) {
