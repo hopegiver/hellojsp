@@ -843,12 +843,13 @@ public class Hello {
 		try {
 			p = Runtime.getRuntime().exec(cmd);
 			p.waitFor();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream(), encoding));
 
 			String line;
 			while ((line = reader.readLine())!= null) {
 				output.append(line).append("\n");
 			}
+			if(output.length() > 0) output.setLength(output.length() - 1);
 		} catch (Exception e) {
 			errorLog("{Hello.exec} cmd:" + cmd, e);
 		}
@@ -1291,7 +1292,7 @@ public class Hello {
 		String ret = "";
 		try {
 			buffer = new ByteArrayOutputStream();
-			osw = new OutputStreamWriter(buffer);
+			osw = new OutputStreamWriter(buffer, encoding);
 			final PrintWriter writer = new PrintWriter(osw);
 			final HttpServletResponse wrappedResponse = new HttpServletResponseWrapper(response) {
 				public PrintWriter getWriter() {
