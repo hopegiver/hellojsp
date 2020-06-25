@@ -81,6 +81,15 @@ public class Json {
 			setError("{Json.setFile} path:" + path, e);
 		}
 	}
+
+	public boolean isValid() {
+		try {
+			parse();
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
 	
 	private void parse() throws Exception {
 		if(this.jstr == null) {

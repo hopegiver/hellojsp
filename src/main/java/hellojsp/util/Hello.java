@@ -1344,6 +1344,10 @@ public class Hello {
 		return flag;
 	}
 
+	public static boolean isNumber(String str) {
+		return str.matches("-?\\d+(\\.\\d+)?");
+	}
+
 	public void mail(String mailTo, String subject, String body) {
 		mail(mailTo, subject, body, null);
 	}
