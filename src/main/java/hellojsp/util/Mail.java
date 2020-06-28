@@ -1,5 +1,6 @@
 package hellojsp.util;
 
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
@@ -18,6 +19,9 @@ import javax.mail.internet.MimeMultipart;
 
 public class Mail {
 
+	private Writer out = null;
+	private boolean debug = false;
+
 	protected String from;
 	protected String mailHost;
 	protected int mailPort;
@@ -27,14 +31,33 @@ public class Mail {
 	protected boolean ssl = false;
 	protected String encoding = Config.getEncoding();
 
+	public String errMsg = "";
+
 	public Mail() {
 		mailHost = Config.get("mailHost");
 		if(mailHost == null) mailHost = "127.0.0.1";
 		mailPort = Config.getInt("mailPort");
 		if(mailPort == 0) mailPort = 25;
-		mailFrom = Config.get("mailFrom");
+		mailFrom = from = Config.get("mailFrom");
 		mailId = Config.get("mailId");
 		mailPass = Config.get("mailPass");
+	}
+
+	public void setDebug(Writer out) {
+		this.out = out;
+		this.debug = true;
+	}
+	public void setDebug() {
+		this.out = null;
+		this.debug = true;
+	}
+
+	private void setError(String msg) {
+		this.errMsg = msg;
+		if(debug) {
+			if(null != out) try { out.write("<hr>" + msg + "<hr>\n"); } catch(Exception ignored) {}
+			else Hello.errorLog(msg);
+		}
 	}
 
 	public void setFrom(String from) {
@@ -109,6 +132,10 @@ public class Mail {
 			msg.setSubject(subject, encoding);
 			msg.setSentDate(new Date());
 
+			setError("from:" + from);
+			setError("to:" + mailTo[0]);
+			setError("subject:" + subject);
+
 			if (files == null) {
 				msg.setContent(body, "text/html; charset=" + encoding);
 			} else {
@@ -131,7 +158,8 @@ public class Mail {
 
 			Transport.send(msg);
 		} catch (Exception e) {
-			Hello.errorLog("{Mail.send} mailTo:" + Arrays.toString(mailTo) + ", subject:" + subject, e);
+			Hello.errorLog("{Mail.send} From:" + from + ", To:" + Arrays.toString(mailTo) + ", Subject:" + subject, e);
+			setError("error:" + e.getMessage());
 		}
 	}
 

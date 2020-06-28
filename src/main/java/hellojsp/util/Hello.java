@@ -48,7 +48,7 @@ public class Hello {
 
 	public String cookieDomain = null;
 	public static String encoding = Config.getEncoding();
-	public String mailFrom = "Hello";
+	public String mailFrom = Config.get("mailFrom");
 
 	private HttpServletRequest request;
 	private HttpServletResponse response;
