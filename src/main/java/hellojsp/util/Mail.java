@@ -33,6 +33,8 @@ public class Mail {
 		mailPort = Config.getInt("mailPort");
 		if(mailPort == 0) mailPort = 25;
 		mailFrom = Config.get("mailFrom");
+		mailId = Config.get("mailId");
+		mailPass = Config.get("mailPass");
 	}
 
 	public void setFrom(String from) {

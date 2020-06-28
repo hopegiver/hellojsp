@@ -16,6 +16,7 @@ public class Http {
 	private boolean debug = false;
 	private String url = null;
 	private final HashMap<String, String> headers = new HashMap<String, String>();
+	private final HashMap<String, String> cookies = new HashMap<String, String>();
 	private final HashMap<String, String> params = new HashMap<String, String>();
 	private String encoding = Config.getEncoding();
 	private String method = "GET";
@@ -60,6 +61,10 @@ public class Http {
 
 	public void setHeader(String key, String value) {
 		headers.put(key, value);
+	}
+
+	public void setCookie(String key, String value) {
+		cookies.put(key, value);
 	}
 
 	public void setParam(String name, String value) {
@@ -110,6 +115,16 @@ public class Http {
 			for(String key : headers.keySet()) {
 				conn.setRequestProperty(key, headers.get(key));
 				setError(key + ":" + headers.get(key));
+			}
+
+			StringBuilder cookie = new StringBuilder();
+			for(String key : cookies.keySet()) {
+				cookie.append(URLEncoder.encode(key, encoding)).append("=").append(URLEncoder.encode(cookies.get(key), encoding)).append("; ");
+			}
+			if(cookie.length() > 0) {
+				cookie.setLength(cookie.length() - 1);
+				conn.setRequestProperty("Cookie", cookie.toString());
+				setError("Cookie:" + cookie.toString());
 			}
 
 			if("POST".equals(method) || "PUT".equals(method) || "DELETE".equals(method)) {
