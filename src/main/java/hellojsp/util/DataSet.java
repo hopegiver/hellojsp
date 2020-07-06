@@ -345,6 +345,7 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 	public String toJson() {
 		return new JSONArray(this).toString();
 	}
+	public String serialize() { return toJson(); }
 	
 	public void fromJson(String str) {
 		JSONArray arr = new JSONArray(str);
@@ -358,6 +359,7 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 			this.addRow(map);
 		}
 	}
+	public void unserialize(String str) { fromJson(str); }
 
 	private void removeAll() {
 		this.clear();
