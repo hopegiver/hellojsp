@@ -88,7 +88,11 @@ public class Page {
 
 	public void setVar(String name, DataSet value) {
 		data.put(name, value.getRow());
-	}	
+	}
+
+	public void setVar(DataSet value) {
+		data.putAll(value.getRow());
+	}
 	
 	public void setLoop(String name, DataSet value) {
 		data.put(name, value);
