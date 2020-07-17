@@ -77,8 +77,16 @@ public class DataObject {
 		this.orderby = sort;
 	}
 
-	public void addJoin(String tb, String type, String cond) {
-		this.join += " " + type + " JOIN " + tb + " ON " + cond;
+	public void setJoin(String tb, String cond) {
+		this.join += " JOIN " + tb + " ON " + cond;
+	}
+
+	public void setLeftJoin(String tb, String cond) {
+		this.join += " LEFT JOIN " + tb + " ON " + cond;
+	}
+
+	public void setRightJoin(String tb, String cond) {
+		this.join += " RIGHT JOIN " + tb + " ON " + cond;
 	}
 
 	public void setLimit(int limit) {
@@ -120,7 +128,6 @@ public class DataObject {
 		record.put(name, Hello.replace(value, "`", "'"));
 		func.put(name, fc);
 	}
-
 
 	public void item(HashMap<String, Object> obj, String exceptions) {
 		String[] arr = exceptions.split(",");
@@ -380,9 +387,10 @@ public class DataObject {
 		return ret > 0;
 	}
 
-	public boolean update() {
-		return update(this.PK + " = '" + id + "'");
+	public boolean update(int id) {
+		return update(this.PK + " = " + id);
 	}
+
 	public boolean update(String where) {
 		int max = record.size();
 		StringBuilder sb = new StringBuilder();
@@ -403,10 +411,6 @@ public class DataObject {
 		
 		int ret = execute(sb.toString(), args);
 		return ret > -1;
-	}
-
-	public boolean delete() {
-		return delete(this.PK + " = '" + this.id + "'");
 	}
 
 	public boolean delete(int id) {

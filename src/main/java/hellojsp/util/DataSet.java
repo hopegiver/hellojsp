@@ -321,6 +321,30 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 		}	
 	}
 
+	public HashMap<String, Object> find(String key, String value) {
+		this.first();
+		while(this.next()) {
+			if(getString(key).equals(value)) {
+				this.first();
+				return getRow();
+			}
+		}
+		this.first();
+		return new HashMap<String, Object>();
+	}
+
+	public String find(String key, String value, String retKey) {
+		this.first();
+		while(this.next()) {
+			if(getString(key).equals(value)) {
+				this.first();
+				return getString(retKey);
+			}
+		}
+		this.first();
+		return "";
+	}
+
 	public DataSet search(String key, String value, String op) {
 		DataSet list = new DataSet();
 		this.first();

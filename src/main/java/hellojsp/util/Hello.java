@@ -647,7 +647,7 @@ public class Hello {
 	public static String getItem(String item, String[] arr) {
 		if(null != arr) {
 			for (String s : arr) {
-				String[] tmp = s.split("=>");
+				String[] tmp = Hello.split("=>", s);
 				String id = tmp[0].trim();
 				String value = (tmp.length > 1 ? tmp[1] : tmp[0]).trim();
 				if (id.equals(item)) return value;
