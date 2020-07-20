@@ -35,6 +35,10 @@ public class Page {
 		this.out = out;
 	}
 
+	public void setWriter(JspWriter out) {
+		this.out = out;
+	}
+
 	public void setDebug(Writer out) {
 		this.debug = true;
 		this.out = out;

@@ -43,6 +43,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import javax.servlet.http.HttpSession;
+import javax.servlet.jsp.JspWriter;
 
 public class Hello {
 
@@ -74,6 +75,10 @@ public class Hello {
 	}
 	
 	public void setWriter(Writer out) {
+		this.out = out;
+	}
+
+	public void setWriter(JspWriter out) {
 		this.out = out;
 	}
 

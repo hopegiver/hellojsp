@@ -59,7 +59,11 @@ public class Json {
 	public void setWriter(Writer out) {
 		this.out = out;
 	}
-	
+
+	public void setWriter(JspWriter out) {
+		this.out = out;
+	}
+
 	public void setUrl(String url) {
 		try { 
 			Http http = new Http(url);

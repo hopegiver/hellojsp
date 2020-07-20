@@ -53,6 +53,10 @@ public class Template {
         this.out = out;
     }
 
+    public void setWriter(JspWriter out) {
+        this.out = out;
+    }
+
     public void setRequest(HttpServletRequest request, HttpServletResponse response) {
         this.response = response;
         setRequest(request);
