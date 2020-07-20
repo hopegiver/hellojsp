@@ -318,7 +318,17 @@ public class DataSet extends ArrayList<HashMap<String, Object>> {
 			return map.containsKey(key);
 		} else {
 			return false;
-		}	
+		}
+	}
+
+	public DataMap getDataMap(String nkey, String vkey) {
+		DataMap ret = new DataMap();
+		this.first();
+		while(this.next()) {
+			ret.put(getString(nkey), get(vkey));
+		}
+		this.first();
+		return ret;
 	}
 
 	public HashMap<String, Object> find(String key, String value) {
