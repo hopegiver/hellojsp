@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.Writer;
 
+import javax.servlet.jsp.JspWriter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -46,6 +47,11 @@ public class XML {
 	public void setDebug(Writer out) {
 		this.out = out;
 		this.debug = true;
+	}
+
+	public void setDebug(JspWriter out) {
+		this.debug = true;
+		this.out = out;
 	}
 
 	public void setError(String msg, Exception ex) {

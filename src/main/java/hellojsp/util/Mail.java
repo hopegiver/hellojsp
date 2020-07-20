@@ -16,6 +16,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.servlet.jsp.JspWriter;
 
 public class Mail {
 
@@ -47,6 +48,12 @@ public class Mail {
 		this.out = out;
 		this.debug = true;
 	}
+
+	public void setDebug(JspWriter out) {
+		this.debug = true;
+		this.out = out;
+	}
+
 	public void setDebug() {
 		this.out = null;
 		this.debug = true;

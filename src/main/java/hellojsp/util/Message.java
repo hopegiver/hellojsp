@@ -1,5 +1,6 @@
 package hellojsp.util;
 
+import javax.servlet.jsp.JspWriter;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +40,12 @@ public class Message {
 		this.debug = true;
 		this.out = out;
 	}
-	
+
+	public void setDebug(JspWriter out) {
+		this.debug = true;
+		this.out = out;
+	}
+
 	public void setDebug() {
 		this.debug = true;
 		this.out = null;

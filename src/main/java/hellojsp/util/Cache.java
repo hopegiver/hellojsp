@@ -1,5 +1,6 @@
 package hellojsp.util;
 
+import javax.servlet.jsp.JspWriter;
 import java.io.File;
 import java.io.Writer;
 
@@ -27,6 +28,11 @@ public class Cache {
 	public void setDebug(Writer out) {
 		this.out = out;
 		this.debug = true;
+	}
+
+	public void setDebug(JspWriter out) {
+		this.debug = true;
+		this.out = out;
 	}
 
 	public void setError(String msg, Exception ex) {

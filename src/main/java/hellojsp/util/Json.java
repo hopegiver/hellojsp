@@ -11,6 +11,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.XML;
 
+import javax.servlet.jsp.JspWriter;
+
 public class Json {
 
 	private Object data = null;
@@ -37,7 +39,12 @@ public class Json {
 		this.debug = true;
 		this.out = out;
 	}
-	
+
+	public void setDebug(JspWriter out) {
+		this.debug = true;
+		this.out = out;
+	}
+
 	public void setDebug() {
 		this.debug = true;
 	}

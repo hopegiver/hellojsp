@@ -9,6 +9,8 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 
+import javax.servlet.jsp.JspWriter;
+
 public class Page {
 
 	protected String root;
@@ -37,7 +39,12 @@ public class Page {
 		this.debug = true;
 		this.out = out;
 	}
-	
+
+	public void setDebug(JspWriter out) {
+		this.debug = true;
+		this.out = out;
+	}
+
 	public void setDebug() {
 		this.debug = true;
 	}

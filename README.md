@@ -12,7 +12,7 @@ pom.xml
 <dependency>
   <groupId>org.hellojsp</groupId>
   <artifactId>hellojsp</artifactId>
-  <version>0.9.13</version>
+  <version>0.9.14</version>
 </dependency>
 ```
 $ mvn install

@@ -3,6 +3,7 @@ package hellojsp.util;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import javax.servlet.jsp.JspWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.Writer;
@@ -17,6 +18,11 @@ public class Excel {
     public Excel() {}
 
     public void setDebug(Writer out) {
+        this.debug = true;
+        this.out = out;
+    }
+
+    public void setDebug(JspWriter out) {
         this.debug = true;
         this.out = out;
     }

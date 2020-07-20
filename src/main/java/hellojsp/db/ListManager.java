@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.jsp.JspWriter;
 import java.io.Writer;
 
 import hellojsp.util.DataSet;
@@ -77,7 +78,12 @@ public class ListManager {
 		this.debug = true;
 		this.out = out;
 	}
-	
+
+	public void setDebug(JspWriter out) {
+		this.debug = true;
+		this.out = out;
+	}
+
 	public void setDebug() {
 		this.out = null;
 		this.debug = true;

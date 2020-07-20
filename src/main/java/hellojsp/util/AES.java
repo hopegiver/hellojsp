@@ -4,6 +4,7 @@ import java.io.Writer;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.servlet.jsp.JspWriter;
 
 public class AES {
 	
@@ -27,7 +28,12 @@ public class AES {
 		this.debug = true;
 		this.out = out;
 	}
-	
+
+	public void setDebug(JspWriter out) {
+		this.debug = true;
+		this.out = out;
+	}
+
 	public void setDebug() {
 		this.debug = true;
 		this.out = null;

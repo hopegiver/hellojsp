@@ -18,6 +18,8 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import hellojsp.util.DataSet;
 import hellojsp.util.Hello;
 
+import javax.servlet.jsp.JspWriter;
+
 public class DB {
 
 	private static final HashMap<String, SqlSessionFactory> sqlSessionFactoryMap = new HashMap<String, SqlSessionFactory>();
@@ -47,7 +49,12 @@ public class DB {
 		this.debug = true;
 		this.out = out;
 	}
-	
+
+	public void setDebug(JspWriter out) {
+		this.debug = true;
+		this.out = out;
+	}
+
 	public void setDebug() {
 		this.debug = true;
 		this.out = null;

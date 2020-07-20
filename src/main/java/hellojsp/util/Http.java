@@ -1,5 +1,6 @@
 package hellojsp.util;
 
+import javax.servlet.jsp.JspWriter;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -34,6 +35,12 @@ public class Http {
 		this.out = out;
 		this.debug = true;
 	}
+
+	public void setDebug(JspWriter out) {
+		this.debug = true;
+		this.out = out;
+	}
+
 	public void setDebug() {
 		this.out = null;
 		this.debug = true;

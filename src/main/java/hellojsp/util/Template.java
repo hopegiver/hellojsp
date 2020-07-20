@@ -10,6 +10,7 @@ import java.util.Hashtable;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.jsp.JspWriter;
 
 public class Template {
 
@@ -41,6 +42,11 @@ public class Template {
     public void setDebug(Writer out) {
         this.out = out;
         debug = true;
+    }
+
+    public void setDebug(JspWriter out) {
+        this.debug = true;
+        this.out = out;
     }
 
     public void setWriter(Writer out) {

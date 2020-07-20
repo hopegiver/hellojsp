@@ -10,6 +10,8 @@ import java.util.Random;
 import hellojsp.util.DataSet;
 import hellojsp.util.Hello;
 
+import javax.servlet.jsp.JspWriter;
+
 public class DataObject {
 	
 	public String databaseId;
@@ -48,6 +50,11 @@ public class DataObject {
 	}
 	public void setDebug(Writer out) {
 		debug = true;
+		this.out = out;
+	}
+
+	public void setDebug(JspWriter out) {
+		this.debug = true;
 		this.out = out;
 	}
 
