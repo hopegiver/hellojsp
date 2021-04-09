@@ -124,6 +124,7 @@ public class Page {
 			if(type == 0) {
 				Properties p = new Properties();
 				p.setProperty("file.resource.loader.path", this.root);
+				p.setProperty("userdirective", "hellojsp.util.ExecuteDirective");
 				
 				Velocity.init(p);
 				

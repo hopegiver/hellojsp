@@ -4,7 +4,7 @@
 
   <groupId>org.hellojsp</groupId>
   <artifactId>hellojsp</artifactId>
-  <version>0.9.14</version>
+  <version>0.9.15</version>
   <packaging>jar</packaging>
 
   <name>hellojsp webapp framework</name>
