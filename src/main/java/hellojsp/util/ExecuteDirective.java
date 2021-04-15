@@ -53,9 +53,9 @@ public class ExecuteDirective extends Directive {
             };
             RequestDispatcher dispatcher = request.getRequestDispatcher(url);
             dispatcher.include(request, wrappedResponse);
-            writer.flush();
+            printWriter.flush();
             ret = buffer.toString();
-            writer.close();
+            printWriter.close();
         } catch(Exception e) {
             Hello.errorLog("{ExecuteDirective.render} url:" + url, e);
         } finally {

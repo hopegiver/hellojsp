@@ -22,9 +22,12 @@ public class Auth {
 
 	private String keyName = "HELLOJSPID";
 	private String domain = null;
+	private String path = "/";
+	private String sameSite = null;
 	private int validTime = -1;
 	private int maxAge = -1;
-	private boolean secureCookie = false;
+	private boolean httpOnly = false;
+	private boolean secure = false;
 	private boolean isValid = false;
 
 	public Auth(HttpServletRequest request, HttpServletResponse response) {
@@ -80,8 +83,20 @@ public class Auth {
 		this.maxAge = second;
 	}
 
-	public void setSecureCookie(boolean sc) {
-		this.secureCookie = sc;
+	public void setPath(String p) {
+		this.path = p;
+	}
+
+	public void setSecure(boolean sc) {
+		this.secure = sc;
+	}
+
+	public void setHttpOnly(boolean ho) {
+		this.httpOnly = ho;
+	}
+
+	public void setSameSite(String ss) {
+		this.sameSite = ss;
 	}
 
 	public boolean isValid() {
@@ -103,9 +118,9 @@ public class Auth {
 			cookie = (String)session.getAttribute(keyName);
 		}
 		if(cookie == null) return false;
-		String md5 = cookie.substring(0, 32);
-		String info = cookie.substring(32);
-		if(!md5.equals(Hello.md5(info + secretId))) {
+		String hash = cookie.substring(0, 64);
+		String info = cookie.substring(64);
+		if(!hash.equals(Hello.sha256(info + secretId))) {
 			destroy();
 			return false;
 		}
@@ -185,17 +200,24 @@ public class Auth {
 			data.put("currtime", System.currentTimeMillis());
 			String dataStr = Json.encode(data);
 			String info = new AES(secretId).encrypt(dataStr);
-			String md5 = Hello.md5(info + secretId);
+			String hash = Hello.sha256(info + secretId);
 
 			if(session == null) {
-				Cookie cookie = new Cookie(keyName, md5 + info);
-				cookie.setPath("/");
-				if(this.maxAge != -1) cookie.setMaxAge(maxAge);
-				if(this.domain != null) cookie.setDomain(domain);
-				if(this.secureCookie) cookie.setSecure(true);
-				response.addCookie(cookie);
+				StringBuilder sb = new StringBuilder();
+				sb.append(keyName);
+				sb.append("=");
+				sb.append(hash);
+				sb.append(info);
+				sb.append("; Path=");
+				sb.append(path);
+				if(maxAge != -1) { sb.append("; Expires="); sb.append(maxAge); }
+				if(domain != null) { sb.append("; Domain="); sb.append(domain); }
+				if(httpOnly) { sb.append("; HttpOnly"); }
+				if(secure) { sb.append("; Secure"); }
+				if(sameSite != null) { sb.append("; SameSite="); sb.append(sameSite); }
+				response.addHeader("Set-Cookie", sb.toString());
 			} else {
-				session.setAttribute(keyName, md5 + info);
+				session.setAttribute(keyName, hash + info);
 			}
 		}
 	}
@@ -204,7 +226,7 @@ public class Auth {
 		if(session == null) {
 			Cookie cookie = new Cookie(keyName, "");
 			cookie.setMaxAge(0);
-			cookie.setPath("/");
+			cookie.setPath(path);
 			if(domain != null) cookie.setDomain(domain);
 			response.addCookie(cookie);
 		} else {
