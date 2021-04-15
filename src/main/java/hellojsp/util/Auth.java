@@ -210,7 +210,7 @@ public class Auth {
 				sb.append(info);
 				sb.append("; Path=");
 				sb.append(path);
-				if(maxAge != -1) { sb.append("; Expires="); sb.append(maxAge); }
+				if(maxAge != -1) { sb.append("; Max-Age="); sb.append(maxAge); }
 				if(domain != null) { sb.append("; Domain="); sb.append(domain); }
 				if(httpOnly) { sb.append("; HttpOnly"); }
 				if(secure) { sb.append("; Secure"); }
